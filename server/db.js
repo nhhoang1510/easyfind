@@ -58,35 +58,35 @@ async function seedMockDB() {
   const hash = await bcrypt.hash('password123', 10);
   mockDB.users = [
     {
-      id: 1, full_name: 'Minh Host', email: 'minh.host@example.com',
+      id: 1, full_name: 'Minh Host', username: 'minh.host', email: 'minh.host@example.com',
       password_hash: hash, role: 'host', gender: 'male',
       phone: '0912345678', skill_level: 'Khá/Tốt',
       city: 'Hà Nội', avatar_color: '#00F5C4', is_active: true,
       created_at: new Date().toISOString(),
     },
     {
-      id: 2, full_name: 'Long Pro', email: 'long.pro@example.com',
+      id: 2, full_name: 'Long Pro', username: 'long.pro', email: 'long.pro@example.com',
       password_hash: hash, role: 'host', gender: 'male',
       phone: '0987654321', skill_level: 'Khá/Tốt',
       city: 'Hà Nội', avatar_color: '#AAFF00', is_active: true,
       created_at: new Date().toISOString(),
     },
     {
-      id: 3, full_name: 'Nguyễn Thị Mai', email: 'mai.player@example.com',
+      id: 3, full_name: 'Nguyễn Thị Mai', username: 'mai.player', email: 'mai.player@example.com',
       password_hash: hash, role: 'player', gender: 'female',
       phone: '0901112233', skill_level: 'Trung bình',
       city: 'Hà Nội', avatar_color: '#EC4899', is_active: true,
       created_at: new Date().toISOString(),
     },
     {
-      id: 4, full_name: 'Nam Sài Gòn', email: 'nam.sgn@example.com',
+      id: 4, full_name: 'Nam Sài Gòn', username: 'nam.sgn', email: 'nam.sgn@example.com',
       password_hash: hash, role: 'host', gender: 'male',
       phone: '0977665544', skill_level: 'Khá/Tốt',
       city: 'TP.HCM', avatar_color: '#7C3AED', is_active: true,
       created_at: new Date().toISOString(),
     },
     {
-      id: 5, full_name: 'Trần Thị Lan', email: 'lan.player@example.com',
+      id: 5, full_name: 'Trần Thị Lan', username: 'lan.player', email: 'lan.player@example.com',
       password_hash: hash, role: 'player', gender: 'female',
       phone: '0944556677', skill_level: 'Mới chơi',
       city: 'TP.HCM', avatar_color: '#F97316', is_active: true,
@@ -138,8 +138,13 @@ await seedMockDB();
 // =============================================
 // USER CRUD (Mock)
 // =============================================
-function findUserByEmail(email) {
-  return mockDB.users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
+function findUserByEmail(term) {
+  if (!term) return null;
+  const target = term.toString().toLowerCase();
+  return mockDB.users.find(u =>
+    (u.username && u.username.toLowerCase() === target) ||
+    (u.email && u.email.toLowerCase() === target)
+  ) || null;
 }
 
 function findUserById(id) {
@@ -147,13 +152,16 @@ function findUserById(id) {
 }
 
 function createUser(data) {
+  const username = data.username || data.email || '';
+  const email = data.email || username;
   const user = {
     id: mockDB.nextUserId++,
-    full_name:     data.full_name,
-    email:         data.email,
+    full_name:     data.full_name || username,
+    username:      username,
+    email:         email,
     password_hash: data.password_hash,
     role:          data.role || 'player',
-    gender:        data.gender,
+    gender:        data.gender || 'male',
     phone:         data.phone || '',
     skill_level:   data.skill_level || '',
     city:          data.city || '',
