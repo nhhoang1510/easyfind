@@ -1,52 +1,27 @@
-// src/pages/RegisterPage.jsx
+// src/pages/RegisterPage.jsx - Split-screen layout with Navy Blue theme
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { SKILL_LEVELS, CITIES } from '../utils/helpers';
-
-const ROLE_OPTIONS = [
-  {
-    value: 'player',
-    label: 'Người chơi',
-    desc: 'Tìm kèo, đăng ký slot, tham gia cộng đồng',
-    icon: '🏸',
-  },
-  {
-    value: 'host',
-    label: 'Người tổ chức',
-    desc: 'Tạo kèo, quản lý danh sách, duyệt cọc tiền',
-    icon: '📋',
-  },
-];
-
-const GENDER_OPTIONS = [
-  { value: 'male',   label: 'Nam' },
-  { value: 'female', label: 'Nữ' },
-  { value: 'other',  label: 'Khác' },
-];
+import badmintonHero from '../assets/badminton_hero.png';
 
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({
-    full_name: '', username: '', password: '', confirm_password: '',
-    role: 'player', gender: 'male', skill_level: 'Trung bình', city: 'Hà Nội',
-  });
+  const [form, setForm] = useState({ username: '', password: '', confirm_password: '' });
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })); }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!form.username.trim())   { setError('Vui lòng nhập tên đăng nhập'); return; }
-    if (form.password.length < 6){ setError('Mật khẩu phải ít nhất 6 ký tự'); return; }
+    if (!form.username.trim())    { setError('Tên đăng nhập không được để trống'); return; }
+    if (form.password.length < 6) { setError('Mật khẩu phải từ 6 ký tự trở lên'); return; }
     if (form.password !== form.confirm_password) { setError('Mật khẩu xác nhận không khớp'); return; }
     setLoading(true);
     try {
-      const { confirm_password, ...payload } = form;
-      await register(payload);
+      await register({ username: form.username.trim(), full_name: form.username.trim(), password: form.password, role: 'player' });
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -56,110 +31,113 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card auth-card--wide">
-        {/* Logo */}
-        <Link to="/" className="auth-logo">
-          <span className="auth-logo-icon">🏸</span>
-          <span>EasyFind</span>
-        </Link>
+    <div className="reg2-page">
 
-        <h1 className="auth-title">Tạo tài khoản</h1>
-        <p className="auth-subtitle">Chỉ mất 1 phút để bắt đầu tham gia cộng đồng!</p>
-
-        {error && <div className="auth-alert auth-alert--error">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="auth-form">
-
-          {/* Role selection */}
-          <div className="form-group">
-            <label className="form-label">Bạn muốn là?</label>
-            <div className="auth-role-grid">
-              {ROLE_OPTIONS.map(r => (
-                <div
-                  key={r.value}
-                  className={`auth-role-card ${form.role === r.value ? 'auth-role-card--active' : ''}`}
-                  onClick={() => set('role', r.value)}
-                >
-                  <span className="auth-role-icon">{r.icon}</span>
-                  <span className="auth-role-label">{r.label}</span>
-                  <span className="auth-role-desc">{r.desc}</span>
-                </div>
-              ))}
-            </div>
+      {/* ── LEFT panel: full image background ── */}
+      <div className="reg2-left">
+        <img src={badmintonHero} alt="" className="reg2-left-img" />
+        <div className="reg2-left-overlay">
+          <Link to="/" className="reg2-brand">
+            🏸 EasyFind
+          </Link>
+          <div className="reg2-left-text">
+            <h2>Tìm kèo.<br/>Đặt chỗ.<br/>Giao lưu.</h2>
+            <p>Cộng đồng cầu lông thế hệ mới — nhanh hơn, thông minh hơn.</p>
           </div>
-
-          {/* Gender */}
-          <div className="form-group">
-            <label className="form-label">Giới tính</label>
-            <div className="auth-gender-row">
-              {GENDER_OPTIONS.map(g => (
-                <button
-                  key={g.value}
-                  type="button"
-                  className={`auth-gender-btn ${form.gender === g.value ? 'auth-gender-btn--active' : ''}`}
-                  onClick={() => set('gender', g.value)}
-                >
-                  {g.label}
-                </button>
-              ))}
-            </div>
+          <div className="reg2-left-dots">
+            <span className="reg2-dot reg2-dot--active" />
+            <span className="reg2-dot" />
+            <span className="reg2-dot" />
           </div>
-
-          {/* Name + username */}
-          <div className="auth-grid-2">
-            <div className="form-group">
-              <label className="form-label">Họ & Tên</label>
-              <input className="form-input" required placeholder="Nguyễn Văn A"
-                value={form.full_name} onChange={e => set('full_name', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Tên đăng nhập</label>
-              <input className="form-input" required placeholder="user123"
-                value={form.username} onChange={e => set('username', e.target.value)} />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="auth-grid-2">
-            <div className="form-group">
-              <label className="form-label">Mật khẩu</label>
-              <input type="password" className="form-input" required placeholder="Ít nhất 6 ký tự"
-                value={form.password} onChange={e => set('password', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Xác nhận mật khẩu</label>
-              <input type="password" className="form-input" required placeholder="Nhập lại mật khẩu"
-                value={form.confirm_password} onChange={e => set('confirm_password', e.target.value)} />
-            </div>
-          </div>
-
-          {/* Skill + city */}
-          <div className="auth-grid-2">
-            <div className="form-group">
-              <label className="form-label">Trình độ</label>
-              <select className="form-select" value={form.skill_level} onChange={e => set('skill_level', e.target.value)}>
-                {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Thành phố</label>
-              <select className="form-select" value={form.city} onChange={e => set('city', e.target.value)}>
-                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
-          </button>
-        </form>
-
-        <p className="auth-switch">
-          Đã có tài khoản?{' '}
-          <Link to="/login" className="auth-link">Đăng nhập</Link>
-        </p>
+        </div>
       </div>
+
+      {/* ── RIGHT panel: form ── */}
+      <div className="reg2-right">
+        <div className="reg2-form-card">
+
+          <div className="reg2-form-top">
+            <h1 className="reg2-title">Tạo tài khoản</h1>
+            <p className="reg2-subtitle">Miễn phí. Không cần email.</p>
+          </div>
+
+          {error && (
+            <div className="reg2-error">
+              ⚠ {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="reg2-form">
+
+            <div className="reg2-field">
+              <label className="reg2-label">Tên đăng nhập</label>
+              <div className="reg2-input-wrap">
+                <svg className="reg2-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
+                </svg>
+                <input
+                  type="text"
+                  className="reg2-input"
+                  placeholder="vd: nguyen_van_a"
+                  required
+                  autoFocus
+                  value={form.username}
+                  onChange={e => set('username', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="reg2-field">
+              <label className="reg2-label">Mật khẩu</label>
+              <div className="reg2-input-wrap">
+                <svg className="reg2-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input
+                  type="password"
+                  className="reg2-input"
+                  placeholder="Ít nhất 6 ký tự"
+                  required
+                  value={form.password}
+                  onChange={e => set('password', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="reg2-field">
+              <label className="reg2-label">Xác nhận mật khẩu</label>
+              <div className="reg2-input-wrap">
+                <svg className="reg2-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <input
+                  type="password"
+                  className="reg2-input"
+                  placeholder="Nhập lại mật khẩu"
+                  required
+                  value={form.confirm_password}
+                  onChange={e => set('confirm_password', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="reg2-btn" disabled={loading}>
+              {loading ? 'Đang tạo tài khoản...' : 'Đăng ký ngay →'}
+            </button>
+
+          </form>
+
+          <div className="reg2-divider"><span>hoặc</span></div>
+
+          <p className="reg2-switch">
+            Đã có tài khoản? <Link to="/login" className="reg2-link">Đăng nhập</Link>
+          </p>
+
+          <Link to="/" className="reg2-back">← Về trang chủ</Link>
+
+        </div>
+      </div>
+
     </div>
   );
 }

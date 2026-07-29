@@ -418,19 +418,23 @@ app.patch('/api/participants/:pid/deposit', requireAuth, requireRole('host'), as
 });
 
 // ─── START ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🏸 KèoCầuPro API Server running at http://localhost:${PORT}`);
-  console.log(`   Mode: ${useMock ? '🟡 In-Memory Mock DB' : '🟢 PostgreSQL'}`);
-  console.log(`\n   Auth Endpoints:`);
-  console.log(`   POST /api/auth/register`);
-  console.log(`   POST /api/auth/login`);
-  console.log(`   GET  /api/auth/me`);
-  console.log(`   PATCH /api/auth/profile`);
-  console.log(`\n   Match Endpoints:`);
-  console.log(`   GET  /api/matches`);
-  console.log(`   POST /api/matches        [host only]`);
-  console.log(`   GET  /api/matches/:id`);
-  console.log(`   POST /api/matches/:id/join        [auth required]`);
-  console.log(`   POST /api/participants/:pid/cancel [auth required]`);
-  console.log(`   PATCH /api/participants/:pid/deposit [host only]\n`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`\n🏸 KèoCầuPro API Server running at http://localhost:${PORT}`);
+    console.log(`   Mode: ${useMock ? '🟡 In-Memory Mock DB' : '🟢 PostgreSQL'}`);
+    console.log(`\n   Auth Endpoints:`);
+    console.log(`   POST /api/auth/register`);
+    console.log(`   POST /api/auth/login`);
+    console.log(`   GET  /api/auth/me`);
+    console.log(`   PATCH /api/auth/profile`);
+    console.log(`\n   Match Endpoints:`);
+    console.log(`   GET  /api/matches`);
+    console.log(`   POST /api/matches        [host only]`);
+    console.log(`   GET  /api/matches/:id`);
+    console.log(`   POST /api/matches/:id/join        [auth required]`);
+    console.log(`   POST /api/participants/:pid/cancel [auth required]`);
+    console.log(`   PATCH /api/participants/:pid/deposit [host only]\n`);
+  });
+}
+
+export default app;
