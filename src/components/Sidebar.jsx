@@ -1,8 +1,22 @@
 // src/components/Sidebar.jsx - Clean minimal sidebar
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function Sidebar({ onCreateMatch, openCount, onShowAuth }) {
+export default function Sidebar({ openCount }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  function handleCreateClick() {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (user.role !== 'host') {
+      alert('Bạn cần đăng ký tài khoản Host để tạo kèo.');
+      return;
+    }
+    navigate('/create-match');
+  }
 
   return (
     <div className="sidebar">
@@ -16,14 +30,7 @@ export default function Sidebar({ onCreateMatch, openCount, onShowAuth }) {
         <button
           className="btn btn-primary"
           style={{ width: '100%' }}
-          onClick={() => {
-            if (!user) { onShowAuth('login'); return; }
-            if (user.role !== 'host') {
-              alert('Bạn cần đăng ký tài khoản Host để tạo kèo.');
-              return;
-            }
-            onCreateMatch();
-          }}
+          onClick={handleCreateClick}
         >
           Tạo kèo ngay
         </button>

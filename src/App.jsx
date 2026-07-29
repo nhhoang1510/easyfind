@@ -1,5 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import './index.css';
 import { api } from './api/client';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -8,25 +9,20 @@ import FilterBar from './components/FilterBar';
 import MatchCard from './components/MatchCard';
 import Sidebar from './components/Sidebar';
 import MatchDetailModal from './components/MatchDetailModal';
-import CreateMatchModal from './components/CreateMatchModal';
-import AuthModal from './components/AuthModal';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import CreateMatchPage from './pages/CreateMatchPage';
 
-function AppInner() {
+function HomePage() {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   const [matches,        setMatches]        = useState([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [error,          setError]          = useState(null);
-  const [filters,        setFilters]        = useState({ district: '', gender_required: '', skill_level: '', has_slot: false });
-  const [courts,         setCourts]         = useState([]);
+  const [filters,        setFilters]        = useState({ district: '', gender_required: '', skill_level: '' });
   const [selectedMatch,  setSelectedMatch]  = useState(null);
-  const [showCreate,     setShowCreate]     = useState(false);
-  const [showAuth,       setShowAuth]       = useState(null);
   const [sortBy,         setSortBy]         = useState('time');
-
-  useEffect(() => {
-    api.getCourts().then(setCourts).catch(() => {});
-  }, []);
 
   const loadMatches = useCallback(async () => {
     setMatchesLoading(true); setError(null);
@@ -35,7 +31,6 @@ function AppInner() {
       if (filters.district)        params.district        = filters.district;
       if (filters.gender_required) params.gender_required = filters.gender_required;
       if (filters.skill_level)     params.skill_level     = filters.skill_level;
-      if (filters.has_slot)        params.has_slot        = 'true';
       const data = await api.getMatches(params);
       setMatches(data);
     } catch (e) {
@@ -47,21 +42,12 @@ function AppInner() {
 
   useEffect(() => { loadMatches(); }, [loadMatches]);
 
-  function handleMatchCreated(newMatch) {
-    setMatches(prev => [{ ...newMatch, confirmed_count: 0, waitlist_count: 0 }, ...prev]);
-  }
-
   function handleShowAuth(tab) {
-    setShowAuth(tab);
-  }
-
-  function handleCreateMatch() {
-    if (!user) { setShowAuth('login'); return; }
-    if (user.role !== 'host') {
-      alert('Chỉ tài khoản Host mới có thể tạo kèo.');
-      return;
+    if (tab === 'register') {
+      navigate('/register');
+    } else {
+      navigate('/login');
     }
-    setShowCreate(true);
   }
 
   const openMatches = matches.filter(m => m.status !== 'cancelled');
@@ -76,7 +62,7 @@ function AppInner() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-main)' }}>
-      <Navbar onCreateMatch={handleCreateMatch} onShowAuth={handleShowAuth} />
+      <Navbar />
       <FilterBar filters={filters} onChange={setFilters} />
 
       <div className="container">
@@ -114,7 +100,7 @@ function AppInner() {
                 <h3 style={{ marginBottom: 6, fontSize: '0.95rem' }}>Chưa có kèo nào</h3>
                 <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: '0.85rem' }}>Thử thay đổi bộ lọc hoặc tạo kèo mới</p>
                 {user?.role === 'host' && (
-                  <button className="btn btn-primary btn-sm" onClick={handleCreateMatch}>Tạo kèo</button>
+                  <button className="btn btn-primary btn-sm" onClick={() => navigate('/create-match')}>Tạo kèo</button>
                 )}
               </div>
             ) : (
@@ -128,34 +114,18 @@ function AppInner() {
 
           {/* Sidebar */}
           <div className="sidebar-column">
-            <Sidebar
-              onCreateMatch={handleCreateMatch}
-              openCount={openMatches.length}
-              onShowAuth={handleShowAuth}
-            />
+            <Sidebar openCount={openMatches.length} />
           </div>
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Match details modal */}
       {selectedMatch && (
         <MatchDetailModal
           match={selectedMatch}
           onClose={() => setSelectedMatch(null)}
           onUpdate={loadMatches}
           onShowAuth={handleShowAuth}
-        />
-      )}
-      {showCreate && user?.role === 'host' && (
-        <CreateMatchModal
-          onClose={() => setShowCreate(false)}
-          onCreated={handleMatchCreated}
-        />
-      )}
-      {showAuth && (
-        <AuthModal
-          defaultTab={showAuth}
-          onClose={() => setShowAuth(null)}
         />
       )}
     </div>
@@ -165,7 +135,14 @@ function AppInner() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppInner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/create-match" element={<CreateMatchPage />} />
+        </Routes>
+      </BrowserRouter>
     </AuthProvider>
   );
 }

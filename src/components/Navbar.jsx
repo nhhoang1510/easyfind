@@ -1,17 +1,18 @@
-// src/components/Navbar.jsx - Clean minimal top bar
+// src/components/Navbar.jsx - Clean minimal top bar with Router Links
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserMenu from './UserMenu';
 
-export default function Navbar({ onCreateMatch, onShowAuth }) {
+export default function Navbar() {
   const { user, loading } = useAuth();
 
   return (
     <header className="topbar">
       <div className="topbar-inner">
         {/* Logo */}
-        <a href="#" className="topbar-logo" id="logo-home">
+        <Link to="/" className="topbar-logo" id="logo-home">
           <span className="topbar-logo-name">EasyFind</span>
-        </a>
+        </Link>
 
         {/* Right side */}
         <div className="topbar-right">
@@ -20,32 +21,35 @@ export default function Navbar({ onCreateMatch, onShowAuth }) {
           ) : user ? (
             <div className="topbar-user-area">
               {user.role === 'host' && (
-                <button
+                <Link
+                  to="/create-match"
                   id="btn-create-match"
                   className="btn btn-primary btn-sm"
-                  onClick={onCreateMatch}
+                  style={{ textDecoration: 'none' }}
                 >
                   + Tạo kèo
-                </button>
+                </Link>
               )}
               <UserMenu />
             </div>
           ) : (
             <div className="topbar-auth">
-              <button
+              <Link
+                to="/login"
                 id="btn-login"
                 className="btn-text"
-                onClick={() => onShowAuth('login')}
+                style={{ textDecoration: 'none' }}
               >
                 Đăng nhập
-              </button>
-              <button
+              </Link>
+              <Link
+                to="/register"
                 id="btn-register"
                 className="btn btn-primary btn-sm"
-                onClick={() => onShowAuth('register')}
+                style={{ textDecoration: 'none' }}
               >
                 Đăng ký
-              </button>
+              </Link>
             </div>
           )}
         </div>
