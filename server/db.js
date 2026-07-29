@@ -13,11 +13,25 @@ const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
 try {
   if (connectionString) {
-    pool = new Pool({
-      connectionString,
-      ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 5000,
-    });
+    try {
+      pool = new Pool({
+        connectionString,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 5000,
+      });
+      await pool.query('SELECT 1');
+    } catch (sslErr) {
+      if (sslErr.message && sslErr.message.includes('does not support SSL')) {
+        pool = new Pool({
+          connectionString,
+          ssl: false,
+          connectionTimeoutMillis: 5000,
+        });
+        await pool.query('SELECT 1');
+      } else {
+        throw sslErr;
+      }
+    }
   } else if (process.env.DB_HOST && process.env.DB_HOST !== 'localhost') {
     pool = new Pool({
       host:     process.env.DB_HOST,
@@ -28,6 +42,7 @@ try {
       ssl:      { rejectUnauthorized: false },
       connectionTimeoutMillis: 5000,
     });
+    await pool.query('SELECT 1');
   } else {
     pool = new Pool({
       host:     process.env.DB_HOST     || 'localhost',
@@ -37,8 +52,8 @@ try {
       password: process.env.DB_PASSWORD || '1234',
       connectionTimeoutMillis: 2000,
     });
+    await pool.query('SELECT 1');
   }
-  await pool.query('SELECT 1');
   console.log('✅ Connected to PostgreSQL');
 } catch (err) {
   console.warn('⚠️ PostgreSQL connection failed:', err.message);
