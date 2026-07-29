@@ -18,8 +18,8 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    const { user: u, token } = await api.login({ email, password });
+  const login = useCallback(async (username, password) => {
+    const { user: u, token } = await api.login({ username, password });
     localStorage.setItem('kcp_token', token);
     setUser(u);
     return u;

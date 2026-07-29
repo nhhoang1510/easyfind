@@ -1,4 +1,4 @@
-// src/components/AuthModal.jsx - Minimalist Flat Rectangular Auth Modal
+// src/components/AuthModal.jsx - Single Username Auth Modal (No Email/Phone required)
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES } from '../utils/helpers';
@@ -21,10 +21,10 @@ export default function AuthModal({ onClose, defaultTab = 'login' }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [regForm, setRegForm] = useState({
-    full_name: '', email: '', password: '', confirm_password: '',
-    role: 'player', gender: '', phone: '', skill_level: '', city: 'Hà Nội',
+    full_name: '', username: '', password: '', confirm_password: '',
+    role: 'player', gender: 'male', skill_level: 'Trung bình', city: 'Hà Nội',
   });
 
   function setReg(k, v) { setRegForm(f => ({ ...f, [k]: v })); }
@@ -33,7 +33,7 @@ export default function AuthModal({ onClose, defaultTab = 'login' }) {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      const user = await login(loginForm.email, loginForm.password);
+      const user = await login(loginForm.username, loginForm.password);
       setSuccess(`Chào mừng trở lại, ${user.full_name}!`);
       setTimeout(onClose, 800);
     } catch (err) {
@@ -46,8 +46,9 @@ export default function AuthModal({ onClose, defaultTab = 'login' }) {
   async function handleRegister(e) {
     e.preventDefault();
     setError('');
-    if (!regForm.gender) { setError('Vui lòng chọn giới tính'); return; }
-    if (!regForm.role)   { setError('Vui lòng chọn vai trò');   return; }
+    if (!regForm.username.trim()) { setError('Vui lòng nhập tên đăng nhập'); return; }
+    if (!regForm.gender)          { setError('Vui lòng chọn giới tính'); return; }
+    if (!regForm.role)            { setError('Vui lòng chọn vai trò');   return; }
     if (regForm.password !== regForm.confirm_password) { setError('Mật khẩu xác nhận không khớp'); return; }
     if (regForm.password.length < 6) { setError('Mật khẩu phải ít nhất 6 ký tự'); return; }
     setLoading(true);
@@ -116,10 +117,10 @@ export default function AuthModal({ onClose, defaultTab = 'login' }) {
           {tab === 'login' && (
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="form-group">
-                <label className="form-label">Email tài khoản</label>
+                <label className="form-label">Tên đăng nhập</label>
                 <input
-                  type="email" className="form-input" required placeholder="email@example.com"
-                  value={loginForm.email} onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
+                  type="text" className="form-input" required placeholder="Nhập tên đăng nhập của bạn"
+                  value={loginForm.username} onChange={e => setLoginForm(f => ({ ...f, username: e.target.value }))}
                 />
               </div>
               <div className="form-group">
@@ -187,14 +188,9 @@ export default function AuthModal({ onClose, defaultTab = 'login' }) {
                   <input className="form-input" required placeholder="Nguyễn Văn A" value={regForm.full_name} onChange={e => setReg('full_name', e.target.value)} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Số điện thoại</label>
-                  <input className="form-input" placeholder="0912 345 678" value={regForm.phone} onChange={e => setReg('phone', e.target.value)} />
+                  <label className="form-label">Tên đăng nhập</label>
+                  <input className="form-input" required placeholder="User123" value={regForm.username} onChange={e => setReg('username', e.target.value)} />
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input type="email" className="form-input" required placeholder="email@example.com" value={regForm.email} onChange={e => setReg('email', e.target.value)} />
               </div>
 
               <div className="grid-2">
@@ -212,7 +208,6 @@ export default function AuthModal({ onClose, defaultTab = 'login' }) {
                 <div className="form-group">
                   <label className="form-label">Trình độ</label>
                   <select className="form-select" value={regForm.skill_level} onChange={e => setReg('skill_level', e.target.value)}>
-                    <option value="">-- Chọn trình độ --</option>
                     {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>

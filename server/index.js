@@ -55,11 +55,11 @@ function safeUser(u) {
 // POST /api/auth/register
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { full_name, email, password, role, gender, phone, skill_level, city } = req.body;
+    const { full_name, username, password, role, gender, skill_level, city } = req.body;
 
     // Validation
-    if (!full_name || !email || !password || !role || !gender) {
-      return res.status(400).json({ error: 'Thiếu thông tin bắt buộc: full_name, email, password, role, gender' });
+    if (!full_name || !username || !password || !role || !gender) {
+      return res.status(400).json({ error: 'Thiếu thông tin bắt buộc: full_name, username, password, role, gender' });
     }
     if (!['host', 'player'].includes(role)) {
       return res.status(400).json({ error: 'Role phải là "host" hoặc "player"' });
@@ -74,26 +74,45 @@ app.post('/api/auth/register', async (req, res) => {
     const AVATAR_COLORS = ['#00F5C4', '#AAFF00', '#7C3AED', '#3B82F6', '#F97316', '#EC4899', '#14B8A6', '#EAB308'];
 
     if (useMock) {
-      const existing = findUserByEmail(email);
-      if (existing) return res.status(409).json({ error: 'Email này đã được đăng ký' });
+      const existing = findUserByEmail(username);
+      if (existing) return res.status(409).json({ error: 'Tên đăng nhập này đã tồn tại' });
       const password_hash = await bcrypt.hash(password, 10);
       const avatar_color  = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-      const user = createUser({ full_name, email, password_hash, role, gender, phone, skill_level, city, avatar_color });
-      const token = jwt.sign({ id: user.id, email: user.email, role: user.role, full_name: user.full_name }, JWT_SECRET, { expiresIn: '7d' });
+      const user = createUser({ full_name, username, password_hash, role, gender, skill_level, city, avatar_color });
+      const token = jwt.sign({ id: user.id, username: user.username, role: user.role, full_name: user.full_name }, JWT_SECRET, { expiresIn: '7d' });
       return res.status(201).json({ user: safeUser(user), token });
     }
 
-    const existing = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
-    if (existing.rows.length > 0) return res.status(409).json({ error: 'Email này đã được đăng ký' });
+    const targetTable = role === 'host' ? 'hosts' : 'users';
+    
+    // Check existing username in both tables
+    const exUser = await pool.query('SELECT id FROM users WHERE username=$1', [username]);
+    const exHost = await pool.query('SELECT id FROM hosts WHERE username=$1', [username]);
+    if (exUser.rows.length > 0 || exHost.rows.length > 0) {
+      return res.status(409).json({ error: 'Tên đăng nhập này đã tồn tại' });
+    }
+
     const password_hash = await bcrypt.hash(password, 10);
     const avatar_color  = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-    const { rows } = await pool.query(
-      `INSERT INTO users (full_name,email,password_hash,role,gender,phone,skill_level,city,avatar_color)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [full_name, email, password_hash, role, gender, phone||'', skill_level||'', city||'', avatar_color]
-    );
-    const user  = rows[0];
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, full_name: user.full_name }, JWT_SECRET, { expiresIn: '7d' });
+    let user;
+
+    if (role === 'host') {
+      const { rows } = await pool.query(
+        `INSERT INTO hosts (full_name,username,password_hash,gender,city,avatar_color)
+         VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+        [full_name, username, password_hash, gender, city||'Hà Nội', avatar_color]
+      );
+      user = { ...rows[0], role: 'host' };
+    } else {
+      const { rows } = await pool.query(
+        `INSERT INTO users (full_name,username,password_hash,gender,skill_level,city,avatar_color)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+        [full_name, username, password_hash, gender, skill_level||'Trung bình', city||'Hà Nội', avatar_color]
+      );
+      user = { ...rows[0], role: 'player' };
+    }
+
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role, full_name: user.full_name }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ user: safeUser(user), token });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -103,23 +122,38 @@ app.post('/api/auth/register', async (req, res) => {
 // POST /api/auth/login
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Thiếu email hoặc mật khẩu' });
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Thiếu tên đăng nhập hoặc mật khẩu' });
 
-    let user;
+    let user = null;
+    let role = 'player';
+
     if (useMock) {
-      user = findUserByEmail(email);
+      user = findUserByEmail(username);
+      if (user) role = user.role;
     } else {
-      const { rows } = await pool.query('SELECT * FROM users WHERE email=$1 AND is_active=true', [email]);
-      user = rows[0] || null;
+      // Search in users first
+      const uRes = await pool.query('SELECT * FROM users WHERE username=$1 AND is_active=true', [username]);
+      if (uRes.rows.length > 0) {
+        user = uRes.rows[0];
+        role = 'player';
+      } else {
+        // Search in hosts next
+        const hRes = await pool.query('SELECT * FROM hosts WHERE username=$1 AND is_active=true', [username]);
+        if (hRes.rows.length > 0) {
+          user = hRes.rows[0];
+          role = 'host';
+        }
+      }
     }
 
-    if (!user) return res.status(401).json({ error: 'Email hoặc mật khẩu không chính xác' });
+    if (!user) return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
     const isValid = await bcrypt.compare(password, user.password_hash);
-    if (!isValid) return res.status(401).json({ error: 'Email hoặc mật khẩu không chính xác' });
+    if (!isValid) return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
 
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, full_name: user.full_name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ user: safeUser(user), token });
+    const userWithRole = { ...user, role };
+    const token = jwt.sign({ id: user.id, username: user.username, role, full_name: user.full_name }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ user: safeUser(userWithRole), token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -132,8 +166,9 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     if (useMock) {
       user = findUserById(req.user.id);
     } else {
-      const { rows } = await pool.query('SELECT * FROM users WHERE id=$1', [req.user.id]);
-      user = rows[0] || null;
+      const table = req.user.role === 'host' ? 'hosts' : 'users';
+      const { rows } = await pool.query(`SELECT * FROM ${table} WHERE id=$1`, [req.user.id]);
+      user = rows[0] ? { ...rows[0], role: req.user.role } : null;
     }
     if (!user) return res.status(404).json({ error: 'Người dùng không tồn tại' });
     res.json(safeUser(user));
@@ -179,12 +214,13 @@ app.get('/api/courts', async (req, res) => {
   }
 });
 
-// ─── MATCHES ─────────────────────────────────────────────────────────────────
+// GET /api/matches
 app.get('/api/matches', async (req, res) => {
   try {
-    const { city, district, skill_level, has_slot } = req.query;
+    const { district, gender_required, skill_level, has_slot } = req.query;
     if (useMock) {
-      let results = getMatchesWithCount({ city, district, skill_level });
+      let results = getMatchesWithCount({ district, skill_level });
+      if (gender_required) results = results.filter(m => !m.gender_required || m.gender_required === gender_required);
       if (has_slot === 'true') results = results.filter(m => m.confirmed_count < m.max_slots);
       return res.json(results);
     }
@@ -195,9 +231,9 @@ app.get('/api/matches', async (req, res) => {
       FROM matches m LEFT JOIN participants p ON p.match_id = m.id
       WHERE m.status != 'cancelled'`;
     const params = [];
-    if (city)        { params.push(city);        query += ` AND m.city=$${params.length}`; }
-    if (district)    { params.push(district);    query += ` AND m.district=$${params.length}`; }
-    if (skill_level) { params.push(skill_level); query += ` AND m.skill_level=$${params.length}`; }
+    if (district)        { params.push(district);        query += ` AND m.district=$${params.length}`; }
+    if (gender_required) { params.push(gender_required); query += ` AND (m.gender_required IS NULL OR m.gender_required=$${params.length})`; }
+    if (skill_level)     { params.push(skill_level);     query += ` AND m.skill_level=$${params.length}`; }
     query += ' GROUP BY m.id ORDER BY m.play_date ASC, m.start_time ASC';
     let { rows } = await pool.query(query, params);
     if (has_slot === 'true') rows = rows.filter(r => parseInt(r.confirmed_count) < r.max_slots);

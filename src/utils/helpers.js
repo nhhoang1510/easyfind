@@ -47,10 +47,12 @@ export function avatarInitials(name) {
 
 export function skillBadgeClass(level) {
   const map = {
-    'Mới chơi': 'badge-blue',
-    'Trung bình': 'badge-mint',
-    'Khá/Tốt': 'badge-lime',
-    'Tất cả trình độ': 'badge-purple',
+    'Mới chơi':      'badge-blue',
+    'Yếu':           'badge-blue',
+    'Trung bình yếu':'badge-mint',
+    'Trung bình':    'badge-mint',
+    'Trung bình khá':'badge-lime',
+    'Khá':           'badge-lime',
   };
   return map[level] || 'badge-gray';
 }
@@ -114,7 +116,7 @@ export const BANKS = [
   { name: 'SHB',                    code: 'SHB' },
 ];
 
-export const SKILL_LEVELS = ['Mới chơi', 'Trung bình', 'Khá/Tốt', 'Tất cả trình độ'];
+export const SKILL_LEVELS = ['Mới chơi', 'Yếu', 'Trung bình yếu', 'Trung bình', 'Trung bình khá', 'Khá'];
 export const CITIES = ['Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'];
 export const SHUTTLECOCKS = ['Ba Sao', 'Hải Yến', 'Thành Công', 'RSL', 'Victor'];
 

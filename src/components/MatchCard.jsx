@@ -1,150 +1,119 @@
-// src/components/MatchCard.jsx - Clean Minimalist Card with 1 item per line
+// src/components/MatchCard.jsx - CareerViet-style listing card
 import { fmtCurrency, fmtDate, fmtTime, slotPercent } from '../utils/helpers';
+
+const GENDER_LABEL = {
+  male:   'Chỉ Nam',
+  female: 'Chỉ Nữ',
+  mixed:  'Nam & Nữ',
+};
+
+const SKILL_COLOR = {
+  'Mới chơi':      { bg: '#EFF6FF', text: '#3B82F6' },
+  'Yếu':           { bg: '#F0FDF4', text: '#22C55E' },
+  'Trung bình yếu':{ bg: '#F0FDF4', text: '#16A34A' },
+  'Trung bình':    { bg: '#FFFBEB', text: '#D97706' },
+  'Trung bình khá':{ bg: '#FFF7ED', text: '#EA580C' },
+  'Khá':           { bg: '#FFF1F2', text: '#E11D48' },
+};
 
 export default function MatchCard({ match, onClick }) {
   const confirmed = parseInt(match.confirmed_count) || 0;
-  const max = parseInt(match.max_slots) || 0;
-  const isFull = confirmed >= max;
-  const pct = slotPercent(confirmed, max);
+  const max       = parseInt(match.max_slots) || 0;
+  const isFull    = confirmed >= max;
+  const pct       = slotPercent(confirmed, max);
+  const skillStyle = SKILL_COLOR[match.skill_level] || { bg: '#F1F5F9', text: '#64748B' };
+
+  const dateStr = fmtDate(match.play_date); // dd/mm/yyyy
+  const [dd, mm] = dateStr.split('/');
 
   return (
-    <div
-      onClick={() => onClick(match)}
-      style={{
-        background: '#FFFFFF',
-        border: '1px solid #E2E8F0',
-        padding: '20px',
-        display: 'grid',
-        gridTemplateColumns: '88px 1fr 180px',
-        gap: 20,
-        alignItems: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = '#E11D48';
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = '#E2E8F0';
-        e.currentTarget.style.boxShadow = 'none';
-      }}
-    >
-      {/* 1. Left Badge Box */}
-      <div style={{
-        width: 88,
-        height: 110,
-        background: '#0F172A',
-        color: '#FFFFFF',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justify: 'center',
-        textAlign: 'center',
-        padding: 6,
-      }}>
-        <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: '#94A3B8', fontWeight: 700, letterSpacing: '0.5px' }}>
-          {match.district || match.city}
-        </div>
-        <div style={{ fontWeight: 900, fontSize: '1.15rem', color: '#E11D48', margin: '4px 0' }}>
-          {match.start_time}
-        </div>
-        <div style={{ fontSize: '0.68rem', color: '#CBD5E1', fontWeight: 600 }}>
-          {fmtDate(match.play_date).split('/')[0]}/{fmtDate(match.play_date).split('/')[1]}
-        </div>
+    <div className="mc" onClick={() => onClick(match)}>
+
+      {/* ── LEFT: Date badge ── */}
+      <div className="mc-badge">
+        <span className="mc-badge-time">{fmtTime(match.start_time)}</span>
+        <span className="mc-badge-date">{dd}/{mm}</span>
       </div>
 
-      {/* 2. Middle Content: 1 item per line */}
-      <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* ── MIDDLE: Details ── */}
+      <div className="mc-body">
         {/* Title */}
-        <h3 style={{
-          fontSize: '1.1rem',
-          fontWeight: 800,
-          color: '#0F172A',
-          marginBottom: 4,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          letterSpacing: '-0.2px',
-        }}>
-          {match.title}
-        </h3>
+        <h3 className="mc-title">{match.title}</h3>
 
-        {/* Dòng 1: Tên Host */}
-        <div style={{ fontSize: '0.84rem', color: '#475569' }}>
-          Tên Host: <strong style={{ color: '#0F172A' }}>{match.host_name}</strong>
+        {/* Host */}
+        <div className="mc-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', flexShrink: 0 }}>
+            <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
+          </svg>
+          <span className="mc-host">{match.host_name}</span>
         </div>
 
-        {/* Dòng 2: Tên sân */}
-        <div style={{ fontSize: '0.84rem', color: '#475569' }}>
-          Tên sân: <strong style={{ color: '#0F172A' }}>{match.court_name}</strong>
+        {/* Cost */}
+        <div className="mc-row mc-row--cost">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          <span>{fmtCurrency(match.cost_per_slot)} / người</span>
         </div>
 
-        {/* Dòng 3: Địa chỉ / Khu vực */}
-        <div style={{ fontSize: '0.84rem', color: '#475569' }}>
-          Địa chỉ: <strong style={{ color: '#0F172A' }}>{match.district}, {match.city}</strong>
+        {/* Location */}
+        <div className="mc-row">
+          <span className="mc-info-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-light)' }}>
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            {match.court_name} – {match.district}
+          </span>
         </div>
 
-        {/* Dòng 4: Thời gian */}
-        <div style={{ fontSize: '0.84rem', color: '#475569' }}>
-          Thời gian: <strong style={{ color: '#0F172A' }}>{fmtTime(match.start_time)} – {fmtTime(match.end_time)} ({fmtDate(match.play_date)})</strong>
+        {/* Time */}
+        <div className="mc-row">
+          <span className="mc-info-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-light)' }}>
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            {fmtTime(match.start_time)} – {fmtTime(match.end_time)}
+          </span>
         </div>
 
-        {/* Dòng 5: Trình độ & Loại cầu */}
-        <div style={{ fontSize: '0.84rem', color: '#475569', display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-          <span>Trình độ: <strong style={{ color: '#0F172A' }}>{match.skill_level}</strong></span>
-          <span>·</span>
-          <span>Cầu: <strong style={{ color: '#0F172A' }}>{match.shuttlecock || 'Ba Sao'}</strong></span>
-          {match.waitlist_count > 0 && (
-            <span style={{ padding: '2px 8px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(225,29,72,0.1)', color: '#E11D48', border: '1px solid rgba(225,29,72,0.2)' }}>
-              Dự bị: {match.waitlist_count}
-            </span>
-          )}
-        </div>
-
-        {/* Dòng 6: Chi phí (Nổi bật) */}
-        <div style={{ fontSize: '0.88rem', color: '#E11D48', fontWeight: 800, marginTop: 2 }}>
-          Chi phí: {fmtCurrency(match.cost_per_slot)} / người
+        {/* Tags row */}
+        <div className="mc-tags">
+          <span className="mc-tag" style={{ background: skillStyle.bg, color: skillStyle.text, border: `1px solid ${skillStyle.text}22` }}>
+            {match.skill_level}
+          </span>
+          <span className="mc-tag">
+            {GENDER_LABEL[match.gender_required] || match.gender_required}
+          </span>
+          <span className="mc-tag">
+            🏸 {match.shuttlecock || 'Ba Sao'}
+          </span>
         </div>
       </div>
 
-      {/* 3. Right Action & Progress */}
-      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'center' }}>
+      {/* ── RIGHT: Slot status + CTA ── */}
+      <div className="mc-action" onClick={e => e.stopPropagation()}>
+        {/* Slot progress */}
+        <div className="mc-slots">
+          <span className="mc-slots-label">
+            <span style={{ fontWeight: 700, color: isFull ? 'var(--accent-primary)' : 'var(--accent-mint)' }}>{confirmed}</span>/{max} suất
+          </span>
+          <div className="mc-slots-bar">
+            <div
+              className="mc-slots-fill"
+              style={{ width: `${pct}%`, background: isFull ? 'var(--accent-primary)' : 'var(--accent-mint)' }}
+            />
+          </div>
+        </div>
+
+        {/* CTA button */}
         <button
-          className="btn btn-primary"
-          style={{
-            width: '100%',
-            justify: 'center',
-            fontSize: '0.82rem',
-            padding: '10px 12px',
-            background: isFull ? '#475569' : '#E11D48',
-            borderColor: isFull ? '#475569' : '#E11D48',
-            color: '#FFFFFF',
-            fontWeight: 700,
-            letterSpacing: '0.5px',
-          }}
+          className={`mc-cta ${isFull ? 'mc-cta--full' : ''}`}
+          onClick={() => onClick(match)}
         >
-          {isFull ? 'ĐĂNG KÝ DỰ BỊ' : 'ỨNG TUYỂN NGAY'}
+          {isFull ? 'Đăng ký dự bị' : 'Đăng ký ngay'}
         </button>
-
-        {/* Slot Progress */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748B', fontWeight: 700, marginBottom: 4 }}>
-            <span>ĐÃ ĐĂNG KÝ</span>
-            <span style={{ color: isFull ? '#E11D48' : '#059669' }}>
-              {confirmed}/{max} suất
-            </span>
-          </div>
-          <div style={{ height: 6, background: '#E2E8F0', width: '100%' }}>
-            <div style={{
-              height: '100%',
-              width: `${pct}%`,
-              background: isFull ? '#E11D48' : '#059669',
-              transition: 'width 0.3s ease',
-            }} />
-          </div>
-        </div>
       </div>
+
     </div>
   );
 }
