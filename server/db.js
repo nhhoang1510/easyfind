@@ -9,22 +9,40 @@ const { Pool } = pg;
 let pool;
 let useMock = false;
 
-// Try to create real PostgreSQL connection
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
 try {
-  pool = new Pool({
-    host:     process.env.DB_HOST     || 'localhost',
-    port:     parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_NAME     || 'badminton_hub',
-    user:     process.env.DB_USER     || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    connectionTimeoutMillis: 3000,
-    max: 10,
-  });
+  if (connectionString) {
+    pool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 5000,
+    });
+  } else if (process.env.DB_HOST && process.env.DB_HOST !== 'localhost') {
+    pool = new Pool({
+      host:     process.env.DB_HOST,
+      port:     parseInt(process.env.DB_PORT || '5432'),
+      database: process.env.DB_NAME     || 'postgres',
+      user:     process.env.DB_USER     || 'postgres',
+      password: process.env.DB_PASSWORD,
+      ssl:      { rejectUnauthorized: false },
+      connectionTimeoutMillis: 5000,
+    });
+  } else {
+    pool = new Pool({
+      host:     process.env.DB_HOST     || 'localhost',
+      port:     parseInt(process.env.DB_PORT || '5432'),
+      database: process.env.DB_NAME     || 'postgres',
+      user:     process.env.DB_USER     || 'postgres',
+      password: process.env.DB_PASSWORD || '1234',
+      connectionTimeoutMillis: 2000,
+    });
+  }
   await pool.query('SELECT 1');
   console.log('✅ Connected to PostgreSQL');
 } catch (err) {
-  console.warn('⚠️  PostgreSQL not available, using in-memory Mock DB');
-  console.warn('   To use PostgreSQL: set DB_HOST, DB_NAME, DB_USER, DB_PASSWORD in .env');
+  console.warn('⚠️ PostgreSQL connection failed:', err.message);
+  console.warn('   Falling back to in-memory Mock DB');
   useMock = true;
   pool = null;
 }
