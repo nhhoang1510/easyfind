@@ -24,6 +24,15 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
   });
   const [msg, setMsg] = useState(null);
   const [copyDone, setCopyDone] = useState(false);
+  const [proofImage, setProofImage] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes (300 seconds) countdown
+
+  useEffect(() => {
+    if (tab === 'qr' && timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [tab, timeLeft]);
 
   useEffect(() => {
     loadDetail();
@@ -359,19 +368,75 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
 
               {/* TAB 4: QR PAYMENT */}
               {tab === 'qr' && (
-                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-                  {qrUrl ? (
-                    <>
-                      <div style={{ border: '1px solid #E2E8F0', padding: 12, background: '#FFFFFF' }}>
-                        <img src={qrUrl} alt="VietQR Code" style={{ width: 220, height: 220, display: 'block' }} />
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#475569', maxWidth: 400 }}>
-                        Chuyển khoản <strong>{fmtCurrency(match.cost_per_slot)}</strong> tới <strong>{match.bank_name}</strong> - <strong>{match.bank_account}</strong> ({match.bank_owner}).
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ padding: '24px 0', color: '#64748B' }}>Host chưa thiết lập thông tin ngân hàng nhận cọc.</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+                  {/* Countdown Timer */}
+                  <div style={{
+                    width: '100%', padding: '12px 16px', background: '#FFFBEB', border: '1px solid #FDE68A',
+                    borderRadius: 'var(--r-sm)', textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '0.78rem', color: '#B45309', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Thời gian giữ chỗ thanh toán
+                    </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#D97706', fontFamily: 'monospace' }}>
+                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#B45309', marginTop: 2 }}>
+                      Vui lòng chuyển khoản và tải ảnh xác nhận trước khi hết giờ.
+                    </div>
+                  </div>
+
+                  {/* Bank Details */}
+                  <div style={{ width: '100%', background: 'var(--bg-subtle)', padding: 14, border: '1px solid var(--border-color)', borderRadius: 'var(--r-sm)' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', marginBottom: 8, textTransform: 'uppercase' }}>
+                      THÔNG TIN CHUYỂN KHOẢN
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.85rem' }}>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Ngân hàng:</span> <strong>{match.bank_name || 'VietinBank'}</strong></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Số tài khoản:</span> <strong style={{ color: 'var(--brand)' }}>{match.bank_account || '108875886924'}</strong></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Chủ tài khoản:</span> <strong>{match.bank_owner || 'Nguyễn Huy Hoàng'}</strong></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Số tiền cọc:</span> <strong style={{ color: 'var(--danger)' }}>{fmtCurrency(match.cost_per_slot)}</strong></div>
+                    </div>
+                  </div>
+
+                  {/* VietQR Code */}
+                  {qrUrl && (
+                    <div style={{ border: '1px solid var(--border-color)', padding: 10, background: '#FFFFFF', borderRadius: 'var(--r-sm)' }}>
+                      <img src={qrUrl} alt="VietQR Code" style={{ width: 180, height: 180, display: 'block' }} />
+                    </div>
                   )}
+
+                  {/* Upload proof of payment */}
+                  <div style={{ width: '100%', textAlign: 'left' }}>
+                    <label className="form-label">XÁC NHẬN CHUYỂN KHOẢN (GỬI ẢNH ĐÃ THANH TOÁN)</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="form-input"
+                      onChange={e => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => setProofImage(reader.result);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    {proofImage && (
+                      <div style={{ marginTop: 10, textAlign: 'center' }}>
+                        <img src={proofImage} alt="Xác nhận cọc" style={{ maxHeight: 150, borderRadius: 6, border: '1px solid var(--border-color)' }} />
+                      </div>
+                    )}
+                    <button
+                      className="btn btn-primary"
+                      style={{ width: '100%', marginTop: 12, justifyContent: 'center' }}
+                      onClick={() => {
+                        setMsg({ type: 'success', text: 'Đã gửi ảnh xác nhận cọc! Trạng thái giữ chỗ hiện tại là PENDING (Chờ Host xác nhận).' });
+                        setTab('players');
+                      }}
+                    >
+                      XÁC NHẬN ĐÃ THANH TOÁN (PENDING)
+                    </button>
+                  </div>
                 </div>
               )}
 
