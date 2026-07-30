@@ -84,6 +84,7 @@ export default function CreateMatchPage() {
     try {
       const payload = {
         ...form,
+        court_id: form.court_id ? parseInt(form.court_id) : null,
         max_slots: parseInt(form.max_slots),
         cost_per_slot: parseFloat(form.cost_per_slot) || 0,
         skill_level: (form.skill_levels || ['Tất cả trình độ']).join(', '),
