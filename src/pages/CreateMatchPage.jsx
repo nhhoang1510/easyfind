@@ -92,15 +92,9 @@ export default function CreateMatchPage() {
     <div className="create-page">
       {/* Top bar */}
       <div className="create-page-topbar">
-        <Link to="/" className="create-back-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Quay lại
+        <Link to="/" className="create-page-logo" style={{ textDecoration: 'none' }}>
+          EasyFind
         </Link>
-        <div className="create-page-logo">
-          <span>🏸</span> EasyFind
-        </div>
       </div>
 
       <div className="create-page-body">
