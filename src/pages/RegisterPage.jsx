@@ -114,7 +114,7 @@ export default function RegisterPage() {
       <div style={{
         background: '#fff', borderRadius: 16,
         boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
-        width: '100%', maxWidth: 640,
+        width: '100%', maxWidth: 860,
         display: 'flex', minHeight: 370,
         overflow: 'hidden',
       }}>
@@ -285,13 +285,6 @@ export default function RegisterPage() {
             </div>
           </form>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{ display: 'flex', gap: 24, marginTop: 20, fontSize: '0.8rem', color: '#5f6368' }}>
-        <a href="#" style={{ color: '#5f6368', textDecoration: 'none' }}>Trợ giúp</a>
-        <a href="#" style={{ color: '#5f6368', textDecoration: 'none' }}>Quyền riêng tư</a>
-        <a href="#" style={{ color: '#5f6368', textDecoration: 'none' }}>Điều khoản</a>
       </div>
     </div>
   );
