@@ -118,7 +118,7 @@ export const BANKS = [
 
 export const SKILL_LEVELS = ['Mới chơi', 'Yếu', 'Trung bình yếu', 'Trung bình', 'Trung bình khá', 'Khá'];
 export const CITIES = ['Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'];
-export const SHUTTLECOCKS = ['Ba Sao', 'Hải Yến', 'Thành Công', 'RSL', 'Victor'];
+export const SHUTTLECOCKS = ['Ba Sao', 'Hải Yến', 'Thành Công', 'RSL', 'Victor', 'Khác'];
 
 export const HN_DISTRICTS = [
   'Ba Đình', 'Cầu Giấy', 'Đống Đa', 'Hai Bà Trưng', 'Hoàn Kiếm',
