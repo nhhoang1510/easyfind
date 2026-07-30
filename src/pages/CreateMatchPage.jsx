@@ -316,9 +316,10 @@ export default function CreateMatchPage() {
                   <label className="form-label">NGÂN HÀNG</label>
                   <select className="form-select" value={form.bank_name} onChange={e => set('bank_name', e.target.value)}>
                     <option value="">-- Chọn ngân hàng --</option>
-                    {(BANKS || ['Vietcombank', 'Techcombank', 'MB Bank', 'BIDV', 'Agribank', 'VPBank', 'ACB', 'TPBank']).map(b => (
-                      <option key={b} value={b}>{b}</option>
-                    ))}
+                    {(BANKS || ['Vietcombank', 'Techcombank', 'MB Bank', 'BIDV', 'Agribank', 'VPBank', 'ACB', 'TPBank']).map(b => {
+                      const bankName = typeof b === 'string' ? b : (b?.name || b?.code || '');
+                      return <option key={bankName} value={bankName}>{bankName}</option>;
+                    })}
                   </select>
                 </div>
 
