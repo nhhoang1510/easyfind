@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES } from '../utils/helpers';
 
-// IMPORT FIREBASE Ở ĐÂY
+// IMPORT FIREBASE AUTH
 import { auth } from '../api/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
@@ -86,9 +86,7 @@ export default function RegisterPage() {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
-        callback: () => {
-          // reCAPTCHA đã giải xong
-        }
+        callback: () => {}
       });
     }
   };
@@ -110,21 +108,16 @@ export default function RegisterPage() {
           setupRecaptcha();
           const appVerifier = window.recaptchaVerifier;
           
-          // Chuyển 09... thành +849...
           const formattedPhone = form.phone.startsWith('0') 
             ? '+84' + form.phone.slice(1) 
             : '+' + form.phone;
 
-          // Gọi API Firebase gửi SMS
           const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-          
-          // Lưu kết quả để lát nữa verify mã OTP
           setConfirmationResult(result);
           
         } catch (err) {
           console.error("Lỗi gửi OTP:", err);
           setLoading(false);
-          // Reset recaptcha nếu có lỗi
           if (window.recaptchaVerifier) {
             window.recaptchaVerifier.render().then(widgetId => {
               window.grecaptcha.reset(widgetId);
@@ -141,7 +134,6 @@ export default function RegisterPage() {
       
       setLoading(true);
       try {
-        // Gửi mã OTP lên Firebase để kiểm tra
         await confirmationResult.confirm(form.otp);
       } catch (err) {
         console.error("Lỗi xác minh OTP:", err);
@@ -181,44 +173,52 @@ export default function RegisterPage() {
     }
   }
 
+  const isMobile = window.innerWidth < 768;
+
   return (
     <div style={{
       minHeight: '100vh', background: '#f1f3f4',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      padding: 16, fontFamily: "'Inter', 'Google Sans', system-ui, sans-serif",
+      padding: 12, fontFamily: "'Inter', 'Google Sans', system-ui, sans-serif",
     }}>
+      {/* Card */}
       <div style={{
         background: '#fff', borderRadius: 16,
         boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
         width: '100%', maxWidth: 860,
-        display: 'flex', minHeight: 420,
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        minHeight: isMobile ? 'auto' : 420,
         overflow: 'hidden',
       }}>
-        {/* Left panel */}
+        {/* Left panel (Mở rộng width lên 280 để chữ không bị rớt dòng) */}
         <div style={{
-          width: 280, flexShrink: 0,
-          padding: '40px 28px',
+          width: isMobile ? '100%' : 280, flexShrink: 0,
+          padding: isMobile ? '24px 20px 16px 20px' : '40px 28px',
           display: 'flex', flexDirection: 'column',
           justifyContent: 'space-between',
+          background: isMobile ? '#f8f9fa' : '#fff',
+          borderBottom: isMobile ? '1px solid #dadce0' : 'none',
         }}>
           <div>
             <div style={{
-              width: 40, height: 40, borderRadius: 10, marginBottom: 28,
+              width: 40, height: 40, borderRadius: 10, marginBottom: isMobile ? 12 : 28,
               background: 'linear-gradient(135deg, #1a73e8 0%, #4285f4 100%)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: '1.1rem', fontWeight: 700,
             }}>E</div>
 
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#202124', lineHeight: 1.25, marginBottom: 10 }}>
+            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 600, color: '#202124', lineHeight: 1.25, marginBottom: 10 }}>
               {currentStepInfo.title}
             </h1>
-            <p style={{ fontSize: '0.88rem', color: '#5f6368', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '0.88rem', color: '#5f6368', lineHeight: 1.6, margin: 0 }}>
               {currentStepInfo.subtitle}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: 5, marginTop: 32 }}>
+          {/* Progress bar */}
+          <div style={{ display: 'flex', gap: 5, marginTop: isMobile ? 16 : 32 }}>
             {steps.map((_, i) => (
               <div key={i} style={{
                 height: 4, flex: i <= step ? 1.5 : 1,
@@ -231,7 +231,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Right panel */}
-        <div style={{ flex: 1, padding: '40px 36px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, padding: isMobile ? '24px 20px' : '40px 36px', display: 'flex', flexDirection: 'column' }}>
           {error && (
             <div style={{
               marginBottom: 16, padding: '9px 13px',
@@ -244,107 +244,108 @@ export default function RegisterPage() {
 
           <form
             onSubmit={isLast ? handleSubmit : e => { e.preventDefault(); nextStep(); }}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column'}}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
           >
-            {/* CÁC BƯỚC FORM UI ... (GIỮ NGUYÊN NHƯ CŨ) */}
-            {currentStepInfo.id === 'account' && (
-              <>
-                <FloatInput id="rg-name" label="Họ và tên" value={form.full_name}
-                  onChange={e => set('full_name', e.target.value)} autoFocus />
-                <FloatInput id="rg-user" label="Tên đăng nhập" value={form.username}
-                  onChange={e => set('username', e.target.value)} />
-              </>
-            )}
+            {/* Vùng bọc nội dung căn giữa (Vertical Center) */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14, paddingBottom: 16 }}>
+              {currentStepInfo.id === 'account' && (
+                <>
+                  <FloatInput id="rg-name" label="Họ và tên" value={form.full_name}
+                    onChange={e => set('full_name', e.target.value)} autoFocus />
+                  <FloatInput id="rg-user" label="Tên đăng nhập" value={form.username}
+                    onChange={e => set('username', e.target.value)} />
+                </>
+              )}
 
-            {currentStepInfo.id === 'details' && (
-              <>
-                <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Vai trò</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    {[
-                      { value: 'player', label: 'Người chơi', desc: 'Tìm kèo, tham gia' },
-                      { value: 'host',   label: 'Người tổ chức', desc: 'Tạo kèo, quản lý' },
-                    ].map(r => (
-                      <div key={r.value} onClick={() => set('role', r.value)} style={{
-                        padding: '11px 12px', cursor: 'pointer', borderRadius: 8,
-                        border: `1.5px solid ${form.role === r.value ? '#1a73e8' : '#dadce0'}`,
-                        background: form.role === r.value ? '#e8f0fe' : '#fff',
-                      }}>
-                        <div style={{ fontWeight: 600, fontSize: '0.88rem', color: form.role === r.value ? '#1a73e8' : '#202124' }}>{r.label}</div>
-                        <div style={{ fontSize: '0.76rem', color: '#5f6368', marginTop: 2 }}>{r.desc}</div>
+              {currentStepInfo.id === 'details' && (
+                <>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Vai trò</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                      {[
+                        { value: 'player', label: 'Người chơi', desc: 'Tìm kèo, tham gia' },
+                        { value: 'host',   label: 'Người tổ chức', desc: 'Tạo kèo, quản lý' },
+                      ].map(r => (
+                        <div key={r.value} onClick={() => set('role', r.value)} style={{
+                          padding: '11px 12px', cursor: 'pointer', borderRadius: 8,
+                          border: `1.5px solid ${form.role === r.value ? '#1a73e8' : '#dadce0'}`,
+                          background: form.role === r.value ? '#e8f0fe' : '#fff',
+                        }}>
+                          <div style={{ fontWeight: 600, fontSize: '0.88rem', color: form.role === r.value ? '#1a73e8' : '#202124' }}>{r.label}</div>
+                          <div style={{ fontSize: '0.76rem', color: '#5f6368', marginTop: 2 }}>{r.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Giới tính</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {[{ value: 'male', label: 'Nam' }, { value: 'female', label: 'Nữ' }].map(g => (
+                        <div key={g.value} onClick={() => set('gender', g.value)} style={{
+                          flex: 1, textAlign: 'center', padding: '10px', cursor: 'pointer', borderRadius: 8,
+                          border: `1.5px solid ${form.gender === g.value ? '#1a73e8' : '#dadce0'}`,
+                          background: form.gender === g.value ? '#e8f0fe' : '#fff',
+                          fontWeight: 600, fontSize: '0.88rem',
+                          color: form.gender === g.value ? '#1a73e8' : '#3c4043',
+                        }}>{g.label}</div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {form.role === 'host' ? (
+                    <FloatInput id="rg-phone" type="tel" label="Số điện thoại (Bắt buộc)" value={form.phone}
+                      onChange={e => set('phone', e.target.value)} />
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 6, textTransform: 'uppercase' }}>Trình độ</div>
+                        <select value={form.skill_level} onChange={e => set('skill_level', e.target.value)}
+                          style={{ width: '100%', padding: '10px 12px', border: '1px solid #dadce0', borderRadius: 6, fontSize: '0.9rem', outline: 'none', background: '#fff' }}>
+                          {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Giới tính</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {[{ value: 'male', label: 'Nam' }, { value: 'female', label: 'Nữ' }].map(g => (
-                      <div key={g.value} onClick={() => set('gender', g.value)} style={{
-                        flex: 1, textAlign: 'center', padding: '10px', cursor: 'pointer', borderRadius: 8,
-                        border: `1.5px solid ${form.gender === g.value ? '#1a73e8' : '#dadce0'}`,
-                        background: form.gender === g.value ? '#e8f0fe' : '#fff',
-                        fontWeight: 600, fontSize: '0.88rem',
-                        color: form.gender === g.value ? '#1a73e8' : '#3c4043',
-                      }}>{g.label}</div>
-                    ))}
-                  </div>
-                </div>
-
-                {form.role === 'host' ? (
-                  <FloatInput id="rg-phone" type="tel" label="Số điện thoại (Bắt buộc)" value={form.phone}
-                    onChange={e => set('phone', e.target.value)} />
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 6, textTransform: 'uppercase' }}>Trình độ</div>
-                      <select value={form.skill_level} onChange={e => set('skill_level', e.target.value)}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid #dadce0', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}>
-                        {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
+                      <div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 6, textTransform: 'uppercase' }}>Thành phố</div>
+                        <select value={form.city} onChange={e => set('city', e.target.value)}
+                          style={{ width: '100%', padding: '10px 12px', border: '1px solid #dadce0', borderRadius: 6, fontSize: '0.9rem', outline: 'none', background: '#fff' }}>
+                          {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 6, textTransform: 'uppercase' }}>Thành phố</div>
-                      <select value={form.city} onChange={e => set('city', e.target.value)}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid #dadce0', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}>
-                        {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </div>
+                  )}
+                </>
+              )}
+
+              {currentStepInfo.id === 'otp' && (
+                <>
+                  <div style={{ fontSize: '0.9rem', color: '#202124', marginBottom: 4 }}>
+                    Mã xác minh 6 số đã được gửi tới SĐT <b>{form.phone}</b>
                   </div>
-                )}
-              </>
-            )}
+                  <FloatInput id="rg-otp" label="Nhập mã OTP" type="text" maxLength={6}
+                    value={form.otp} onChange={e => set('otp', e.target.value.replace(/\D/g, ''))} autoFocus />
+                </>
+              )}
 
-            {currentStepInfo.id === 'otp' && (
-              <>
-                <div style={{ fontSize: '0.9rem', color: '#202124', marginBottom: 10 }}>
-                  Mã xác minh 6 số đã được gửi tới SĐT <b>{form.phone}</b>
-                </div>
-                <FloatInput id="rg-otp" label="Nhập mã OTP" type="text" maxLength={6}
-                  value={form.otp} onChange={e => set('otp', e.target.value.replace(/\D/g, ''))} autoFocus />
-              </>
-            )}
+              {currentStepInfo.id === 'password' && (
+                <>
+                  <FloatInput id="rg-pw" label="Mật khẩu" type={showPw ? 'text' : 'password'}
+                    value={form.password} onChange={e => set('password', e.target.value)} autoFocus />
+                  <FloatInput id="rg-pw2" label="Xác nhận mật khẩu" type={showPw ? 'text' : 'password'}
+                    value={form.confirm_password} onChange={e => set('confirm_password', e.target.value)} />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.87rem', color: '#5f6368', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)}
+                      style={{ accentColor: '#1a73e8', width: 15, height: 15 }} />
+                    Hiện mật khẩu
+                  </label>
+                </>
+              )}
+            </div>
 
-            {currentStepInfo.id === 'password' && (
-              <>
-                <FloatInput id="rg-pw" label="Mật khẩu" type={showPw ? 'text' : 'password'}
-                  value={form.password} onChange={e => set('password', e.target.value)} autoFocus />
-                <FloatInput id="rg-pw2" label="Xác nhận mật khẩu" type={showPw ? 'text' : 'password'}
-                  value={form.confirm_password} onChange={e => set('confirm_password', e.target.value)} />
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.87rem', color: '#5f6368', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)}
-                    style={{ accentColor: '#1a73e8', width: 15, height: 15 }} />
-                  Hiện mật khẩu
-                </label>
-              </>
-            )}
-
-            {/* CONTAINER CHO RECAPTCHA FIREBASE */}
             <div id="recaptcha-container"></div>
 
             {/* Footer nav */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid #f1f3f4' }}>
               {step === 0 ? (
                 <Link to="/login" style={{ fontSize: '0.88rem', color: '#1a73e8', textDecoration: 'none', fontWeight: 500 }}>
                   Đăng nhập
