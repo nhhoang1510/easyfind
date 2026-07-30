@@ -112,9 +112,9 @@ app.post('/api/auth/register', async (req, res) => {
 
     if (role === 'host') {
       const { rows } = await pool.query(
-        `INSERT INTO hosts (full_name,username,password_hash,gender,city,avatar_color)
-         VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-        [full_name, username, password_hash, gender, city||'Hà Nội', avatar_color]
+        `INSERT INTO hosts (full_name,username,password_hash,gender,phone,is_phone_verified,city,avatar_color)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+        [full_name, username, password_hash, gender, req.body.phone || null, req.body.is_phone_verified || false, city||'Hà Nội', avatar_color]
       );
       user = { ...rows[0], role: 'host' };
     } else {
@@ -186,6 +186,44 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     }
     if (!user) return res.status(404).json({ error: 'Người dùng không tồn tại' });
     res.json(safeUser(user));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/auth/send-otp (Gửi OTP tới SĐT Host)
+app.post('/api/auth/send-otp', async (req, res) => {
+  const { phone } = req.body;
+  if (!phone || phone.length < 9) {
+    return res.status(400).json({ error: 'Số điện thoại không hợp lệ' });
+  }
+  // Demo Mode: Mã OTP mặc định là "123456"
+  res.json({ message: 'Mã OTP đã được gửi tới SĐT ' + phone, demo_otp: '123456' });
+});
+
+// POST /api/auth/verify-otp (Xác minh OTP & Cập nhật Tích Xanh cho Host)
+app.post('/api/auth/verify-otp', requireAuth, async (req, res) => {
+  try {
+    const { otp, phone } = req.body;
+    if (otp !== '123456') {
+      return res.status(400).json({ error: 'Mã OTP không chính xác (Thử dùng mã: 123456)' });
+    }
+
+    if (useMock) {
+      const user = findUserById(req.user.id);
+      if (user) {
+        user.phone = phone || user.phone;
+        user.is_phone_verified = true;
+      }
+      return res.json({ success: true, message: 'Xác minh SĐT thành công!', is_phone_verified: true });
+    }
+
+    const table = req.user.role === 'host' ? 'hosts' : 'users';
+    await pool.query(
+      `UPDATE ${table} SET is_phone_verified=true, phone=COALESCE($1, phone) WHERE id=$2`,
+      [phone || null, req.user.id]
+    );
+    res.json({ success: true, message: 'Xác minh SĐT thành công!', is_phone_verified: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

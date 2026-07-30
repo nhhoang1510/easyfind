@@ -26,6 +26,8 @@ export const api = {
   login:             (data)        => apiFetch('/auth/login',     { method: 'POST', body: JSON.stringify(data) }),
   getMe:             ()            => apiFetch('/auth/me'),
   updateProfile:     (data)        => apiFetch('/auth/profile',   { method: 'PATCH', body: JSON.stringify(data) }),
+  sendOTP:           (phone)       => apiFetch('/auth/send-otp',  { method: 'POST',  body: JSON.stringify({ phone }) }),
+  verifyOTP:         (data)        => apiFetch('/auth/verify-otp', { method: 'POST',  body: JSON.stringify(data) }),
 
   // Matches
   getMatches:        (params = {}) => apiFetch('/matches?' + new URLSearchParams(params).toString()),

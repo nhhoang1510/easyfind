@@ -224,6 +224,17 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
+                {/* Số điện thoại (Bắt buộc cho Host) */}
+                {form.role === 'host' && (
+                  <div>
+                    <FloatInput id="rg-phone" label="Số điện thoại / Zalo (Bắt buộc cho Host)" value={form.phone || ''}
+                      onChange={e => set('phone', e.target.value)} />
+                    <div style={{ fontSize: '0.76rem', color: '#059669', marginTop: -4, fontWeight: 500 }}>
+                      ✓ Host được xác minh SĐT sẽ nhận Tích Xanh Uy Tín trên các kèo đấu
+                    </div>
+                  </div>
+                )}
+
                 {/* Trình độ + Thành phố */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div>

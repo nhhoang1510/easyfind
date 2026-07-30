@@ -46,6 +46,9 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
             <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
           </svg>
           <span className="mc-host">{match.host_name}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, background: 'rgba(5,150,105,0.1)', color: '#059669', fontSize: '0.72rem', fontWeight: 600, padding: '1px 6px', borderRadius: 100, marginLeft: 4 }}>
+            ✓ Đã xác minh
+          </span>
         </div>
 
         {/* Cost */}

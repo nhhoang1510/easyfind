@@ -37,14 +37,15 @@ CREATE TABLE hosts (
   username      VARCHAR(100) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   gender        VARCHAR(20) NOT NULL DEFAULT 'other',
-  phone         VARCHAR(20),
-  bank_name     VARCHAR(100),
-  bank_account  VARCHAR(50),
-  bank_owner    VARCHAR(100),
-  city          VARCHAR(100) DEFAULT 'Hà Nội',
-  avatar_color  VARCHAR(30) DEFAULT '#AAFF00',
-  is_active     BOOLEAN DEFAULT true,
-  created_at    TIMESTAMP DEFAULT NOW()
+  phone             VARCHAR(20),
+  is_phone_verified BOOLEAN DEFAULT false,
+  bank_name         VARCHAR(100),
+  bank_account      VARCHAR(50),
+  bank_owner        VARCHAR(100),
+  city              VARCHAR(100) DEFAULT 'Hà Nội',
+  avatar_color      VARCHAR(30) DEFAULT '#AAFF00',
+  is_active         BOOLEAN DEFAULT true,
+  created_at        TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX idx_hosts_username ON hosts(username);
