@@ -162,29 +162,26 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
           </button>
         </div>
 
-        {/* Tab switcher - Responsive Flex Wrap */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, borderBottom: '1px solid #E2E8F0', background: '#F8FAFC', padding: '6px 8px' }}>
+        {/* Tab switcher */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
           {[
             { id: 'info',    label: 'THÔNG TIN KÈO' },
             { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots})` },
-            { id: 'join',    label: isFull ? 'ĐĂNG KÝ DỰ BỊ' : 'ĐĂNG KÝ NGAY' },
-            { id: 'qr',      label: 'CỌC TIỀN (QR 10P)' },
             { id: 'copy',    label: 'COPY BÀI ZALO' },
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => { setTab(t.id); setStep('view'); }}
               style={{
-                flex: '1 1 auto',
-                padding: '8px 12px',
-                fontSize: '0.78rem',
+                flex: 1,
+                padding: '12px 8px',
+                fontSize: '0.8rem',
                 fontWeight: 700,
-                borderRadius: 'var(--r-sm)',
-                border: tab === t.id ? '1px solid var(--brand)' : '1px solid transparent',
-                background: tab === t.id ? 'var(--bg-surface)' : 'transparent',
-                color: tab === t.id ? 'var(--brand)' : 'var(--text-muted)',
+                border: 'none',
+                borderBottom: (tab === t.id && step === 'view') ? '2px solid var(--brand)' : '2px solid transparent',
+                background: (tab === t.id && step === 'view') ? '#FFFFFF' : 'transparent',
+                color: (tab === t.id && step === 'view') ? 'var(--brand)' : '#64748B',
                 cursor: 'pointer',
-                whiteSpace: 'nowrap',
               }}
             >
               {t.label}
@@ -400,15 +397,15 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
                     </div>
                   </div>
 
-                  {/* Bank Details */}
+                  {/* Bank Details from Match / Host */}
                   <div style={{ width: '100%', background: 'var(--bg-subtle)', padding: 14, border: '1px solid var(--border-color)', borderRadius: 'var(--r-sm)' }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', marginBottom: 8, textTransform: 'uppercase' }}>
-                      THÔNG TIN CHUYỂN KHOẢN
+                      THÔNG TIN CHUYỂN KHOẢN CỦA HOST
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.85rem' }}>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Ngân hàng:</span> <strong>{match.bank_name || 'VietinBank'}</strong></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Ngân hàng:</span> <strong>{match.bank_name || 'MB Bank'}</strong></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>Số tài khoản:</span> <strong style={{ color: 'var(--brand)' }}>{match.bank_account || '108875886924'}</strong></div>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Chủ tài khoản:</span> <strong>{match.bank_owner || 'Nguyễn Huy Hoàng'}</strong></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Chủ tài khoản:</span> <strong>{match.bank_owner || match.host_name}</strong></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>Số tiền cọc:</span> <strong style={{ color: 'var(--danger)' }}>{fmtCurrency(match.cost_per_slot)}</strong></div>
                     </div>
                   </div>
