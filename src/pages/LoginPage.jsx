@@ -1,4 +1,4 @@
-// src/pages/LoginPage.jsx
+// src/pages/LoginPage.jsx — Professional minimalist redesign
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      const user = await login(form.username, form.password);
+      await login(form.username, form.password);
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -24,52 +24,53 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        {/* Logo */}
-        <Link to="/" className="auth-logo">
-          <span className="auth-logo-icon">🏸</span>
-          <span>EasyFind</span>
-        </Link>
+    <div className="lp-page">
+      <div className="lp-card">
+        {/* Brand */}
+        <Link to="/" className="lp-brand">EasyFind</Link>
 
-        <h1 className="auth-title">Đăng nhập</h1>
-        <p className="auth-subtitle">Chào mừng trở lại! Đăng nhập để tiếp tục.</p>
+        <div className="lp-header">
+          <h1 className="lp-title">Đăng nhập</h1>
+          <p className="lp-sub">Chào mừng trở lại! Đăng nhập để tiếp tục.</p>
+        </div>
 
-        {error && <div className="auth-alert auth-alert--error">{error}</div>}
+        {error && <div className="lp-error">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label className="form-label">Tên đăng nhập</label>
+        <form onSubmit={handleSubmit} className="lp-form">
+          <div className="lp-field">
+            <label className="lp-label">Tên đăng nhập</label>
             <input
               type="text"
-              className="form-input"
+              className="lp-input"
               placeholder="Nhập tên đăng nhập"
               required
+              autoComplete="username"
               value={form.username}
               onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Mật khẩu</label>
+          <div className="lp-field">
+            <label className="lp-label">Mật khẩu</label>
             <input
               type="password"
-              className="form-input"
+              className="lp-input"
               placeholder="••••••••"
               required
+              autoComplete="current-password"
               value={form.password}
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
             />
           </div>
 
-          <button type="submit" className="auth-submit-btn" disabled={loading}>
+          <button type="submit" className="lp-submit" disabled={loading}>
             {loading ? 'Đang xử lý...' : 'Đăng nhập'}
           </button>
         </form>
 
-        <p className="auth-switch">
+        <p className="lp-footer">
           Chưa có tài khoản?{' '}
-          <Link to="/register" className="auth-link">Đăng ký ngay</Link>
+          <Link to="/register" className="lp-link">Đăng ký ngay</Link>
         </p>
       </div>
     </div>
