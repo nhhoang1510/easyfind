@@ -197,7 +197,7 @@ export default function RegisterPage() {
       }}>
         {/* Left panel */}
         <div style={{
-          width: 220, flexShrink: 0,
+          width: 280, flexShrink: 0,
           padding: '40px 28px',
           display: 'flex', flexDirection: 'column',
           justifyContent: 'space-between',
@@ -244,7 +244,7 @@ export default function RegisterPage() {
 
           <form
             onSubmit={isLast ? handleSubmit : e => { e.preventDefault(); nextStep(); }}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column'}}
           >
             {/* CÁC BƯỚC FORM UI ... (GIỮ NGUYÊN NHƯ CŨ) */}
             {currentStepInfo.id === 'account' && (
