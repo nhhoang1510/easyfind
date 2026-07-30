@@ -402,9 +402,28 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', marginBottom: 8, textTransform: 'uppercase' }}>
                       THÔNG TIN CHUYỂN KHOẢN CỦA HOST
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.85rem' }}>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Ngân hàng:</span> <strong>{match.bank_name || 'MB Bank'}</strong></div>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Số tài khoản:</span> <strong style={{ color: 'var(--brand)' }}>{match.bank_account || '108875886924'}</strong></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: '0.85rem' }}>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Ngân hàng:</span> <strong>{match.bank_name || 'Chưa thiết lập'}</strong></div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>Số tài khoản:</span>{' '}
+                        <strong style={{ color: 'var(--brand)' }}>{match.bank_account || 'Chưa thiết lập'}</strong>
+                        {match.bank_account && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(match.bank_account);
+                              setMsg({ type: 'success', text: `Đã sao chép STK ${match.bank_account} vào bộ nhớ tạm!` });
+                            }}
+                            style={{
+                              marginLeft: 6, padding: '2px 6px', fontSize: '0.7rem', fontWeight: 600,
+                              background: 'var(--brand-light)', color: 'var(--brand)', border: '1px solid var(--brand-border)',
+                              borderRadius: 4, cursor: 'pointer'
+                            }}
+                          >
+                            Copy STK
+                          </button>
+                        )}
+                      </div>
                       <div><span style={{ color: 'var(--text-muted)' }}>Chủ tài khoản:</span> <strong>{match.bank_owner || match.host_name}</strong></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>Số tiền cọc:</span> <strong style={{ color: 'var(--danger)' }}>{fmtCurrency(match.cost_per_slot)}</strong></div>
                     </div>

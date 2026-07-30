@@ -27,9 +27,12 @@ export default function CreateMatchPage() {
 
   const [form, setForm] = useState({
     ...defaultForm,
-    play_date:  new Date().toISOString().split('T')[0],
-    host_name:  user?.full_name || '',
-    host_phone: user?.phone || '',
+    play_date:    new Date().toISOString().split('T')[0],
+    host_name:    user?.full_name || '',
+    host_phone:   user?.phone || '',
+    bank_name:    user?.bank_name || '',
+    bank_account: user?.bank_account || '',
+    bank_owner:   user?.bank_owner || '',
   });
   const [courts, setCourts] = useState([]);
   const [step, setStep] = useState(1);
