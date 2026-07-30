@@ -1,8 +1,12 @@
 // src/pages/RegisterPage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES } from '../utils/helpers';
+
+// IMPORT FIREBASE Ở ĐÂY
+import { auth } from '../firebaseConfig';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 /* ── Floating label input ───────────────────────────────── */
 function FloatInput({ id, label, type = 'text', value, onChange, required, autoFocus, maxLength }) {
@@ -54,6 +58,9 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [showPw, setShowPw] = useState(false);
 
+  // STATE LƯU KẾT QUẢ FIREBASE OTP
+  const [confirmationResult, setConfirmationResult] = useState(null);
+
   const [form, setForm] = useState({
     full_name: '', username: '',
     password: '', confirm_password: '',
@@ -62,11 +69,9 @@ export default function RegisterPage() {
     phone: '', otp: ''
   });
 
-  // 1. TẠO MẢNG STEPS ĐỘNG DỰA TRÊN ROLE
   const steps = [
     { id: 'account', title: 'Tạo tài khoản',     subtitle: 'Nhập tên của bạn' },
     { id: 'details', title: 'Thông tin cá nhân', subtitle: 'Cho chúng tôi biết thêm về bạn' },
-    // Dòng này dùng spread operator để chèn bước OTP nếu role là host
     ...(form.role === 'host' ? [{ id: 'otp', title: 'Xác minh SĐT', subtitle: 'Bảo vệ cộng đồng khỏi tài khoản ảo' }] : []),
     { id: 'password', title: 'Tạo mật khẩu',     subtitle: 'Dùng ít nhất 6 ký tự' },
   ];
@@ -75,6 +80,18 @@ export default function RegisterPage() {
   const isLast = step === steps.length - 1;
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })); setError(''); }
+
+  // HÀM KHỞI TẠO RECAPTCHA CỦA FIREBASE
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA đã giải xong
+        }
+      });
+    }
+  };
 
   async function nextStep() {
     const stepId = steps[step].id;
@@ -85,18 +102,35 @@ export default function RegisterPage() {
     }
     
     if (stepId === 'details') {
-      // Chỉ kiểm tra số điện thoại và gửi OTP nếu người dùng là host
       if (form.role === 'host') {
         if (!form.phone.trim() || form.phone.length < 10) return setError('Vui lòng nhập số điện thoại hợp lệ');
         
         setLoading(true);
         try {
-          // Giả lập call API gửi OTP
-          await new Promise(res => setTimeout(res, 1000)); 
-          console.log('Đã gửi OTP đến', form.phone);
+          setupRecaptcha();
+          const appVerifier = window.recaptchaVerifier;
+          
+          // Chuyển 09... thành +849...
+          const formattedPhone = form.phone.startsWith('0') 
+            ? '+84' + form.phone.slice(1) 
+            : '+' + form.phone;
+
+          // Gọi API Firebase gửi SMS
+          const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+          
+          // Lưu kết quả để lát nữa verify mã OTP
+          setConfirmationResult(result);
+          
         } catch (err) {
+          console.error("Lỗi gửi OTP:", err);
           setLoading(false);
-          return setError('Không thể gửi OTP, vui lòng thử lại sau.');
+          // Reset recaptcha nếu có lỗi
+          if (window.recaptchaVerifier) {
+            window.recaptchaVerifier.render().then(widgetId => {
+              window.grecaptcha.reset(widgetId);
+            });
+          }
+          return setError('Không thể gửi OTP. Vui lòng kiểm tra lại SĐT và thử lại.');
         }
         setLoading(false);
       }
@@ -107,11 +141,12 @@ export default function RegisterPage() {
       
       setLoading(true);
       try {
-        // Giả lập call API kiểm tra OTP
-        await new Promise(res => setTimeout(res, 1000)); 
+        // Gửi mã OTP lên Firebase để kiểm tra
+        await confirmationResult.confirm(form.otp);
       } catch (err) {
+        console.error("Lỗi xác minh OTP:", err);
         setLoading(false);
-        return setError(err.message || 'Mã OTP không chính xác');
+        return setError('Mã OTP không chính xác hoặc đã hết hạn.');
       }
       setLoading(false);
     }
@@ -130,7 +165,6 @@ export default function RegisterPage() {
     try {
       const { confirm_password, otp, ...payload } = form;
       
-      // Lọc bỏ dữ liệu thừa tùy theo Role trước khi gọi API
       if (payload.role === 'host') {
         delete payload.skill_level;
         delete payload.city;
@@ -184,7 +218,6 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Progress bar */}
           <div style={{ display: 'flex', gap: 5, marginTop: 32 }}>
             {steps.map((_, i) => (
               <div key={i} style={{
@@ -213,7 +246,7 @@ export default function RegisterPage() {
             onSubmit={isLast ? handleSubmit : e => { e.preventDefault(); nextStep(); }}
             style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}
           >
-            {/* STEP: Tên & Username */}
+            {/* CÁC BƯỚC FORM UI ... (GIỮ NGUYÊN NHƯ CŨ) */}
             {currentStepInfo.id === 'account' && (
               <>
                 <FloatInput id="rg-name" label="Họ và tên" value={form.full_name}
@@ -223,10 +256,8 @@ export default function RegisterPage() {
               </>
             )}
 
-            {/* STEP: Thông tin cá nhân */}
             {currentStepInfo.id === 'details' && (
               <>
-                {/* Vai trò */}
                 <div>
                   <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Vai trò</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -246,7 +277,6 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Giới tính */}
                 <div>
                   <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Giới tính</div>
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -262,12 +292,10 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Nếu là Host => Hiện SĐT */}
                 {form.role === 'host' ? (
                   <FloatInput id="rg-phone" type="tel" label="Số điện thoại (Bắt buộc)" value={form.phone}
                     onChange={e => set('phone', e.target.value)} />
                 ) : (
-                  /* Nếu là Player => Hiện Trình độ & Thành phố */
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     <div>
                       <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 6, textTransform: 'uppercase' }}>Trình độ</div>
@@ -288,7 +316,6 @@ export default function RegisterPage() {
               </>
             )}
 
-            {/* STEP: Xác thực OTP (Chỉ render nếu steps chứa id này - tức là đang ở role Host) */}
             {currentStepInfo.id === 'otp' && (
               <>
                 <div style={{ fontSize: '0.9rem', color: '#202124', marginBottom: 10 }}>
@@ -296,15 +323,9 @@ export default function RegisterPage() {
                 </div>
                 <FloatInput id="rg-otp" label="Nhập mã OTP" type="text" maxLength={6}
                   value={form.otp} onChange={e => set('otp', e.target.value.replace(/\D/g, ''))} autoFocus />
-                
-                <button type="button" onClick={() => {/* Resend OTP logic */}} 
-                  style={{ background: 'none', border: 'none', color: '#1a73e8', fontSize: '0.85rem', textAlign: 'left', cursor: 'pointer', padding: 0, marginTop: 4, fontWeight: 500 }}>
-                  Gửi lại mã
-                </button>
               </>
             )}
 
-            {/* STEP: Mật khẩu */}
             {currentStepInfo.id === 'password' && (
               <>
                 <FloatInput id="rg-pw" label="Mật khẩu" type={showPw ? 'text' : 'password'}
@@ -318,6 +339,9 @@ export default function RegisterPage() {
                 </label>
               </>
             )}
+
+            {/* CONTAINER CHO RECAPTCHA FIREBASE */}
+            <div id="recaptcha-container"></div>
 
             {/* Footer nav */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 8 }}>
