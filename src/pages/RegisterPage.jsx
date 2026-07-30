@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES } from '../utils/helpers';
 
 // IMPORT FIREBASE Ở ĐÂY
-import { auth } from '../firebase';
+import { auth } from '../api/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 /* ── Floating label input ───────────────────────────────── */
