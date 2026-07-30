@@ -36,6 +36,10 @@ export default function CreateMatchPage() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
 
+  // Court search state
+  const [courtSearch, setCourtSearch] = useState('');
+  const [courtDropOpen, setCourtDropOpen] = useState(false);
+
   useEffect(() => {
     if (!user || user.role !== 'host') {
       navigate('/');
@@ -47,15 +51,25 @@ export default function CreateMatchPage() {
     setForm(f => ({ ...f, [k]: v, ...(k === 'city' ? { district: '', court_id: '', court_name: '' } : {}) }));
   }
 
-  function handleCourtSelect(e) {
-    const id = e.target.value;
-    if (id === 'custom') {
-      set('court_id', ''); set('court_name', '');
-    } else {
-      const c = courts.find(c => c.id === parseInt(id));
-      if (c) setForm(f => ({ ...f, court_id: c.id, court_name: c.name, district: c.district, city: c.city }));
-    }
+  function handleCourtSearchChange(val) {
+    setCourtSearch(val);
+    setCourtDropOpen(true);
+    // If user is typing freely, treat it as a custom court name
+    setForm(f => ({ ...f, court_id: '', court_name: val }));
   }
+
+  function handleCourtSelect(court) {
+    setCourtSearch(court.name);
+    setCourtDropOpen(false);
+    setForm(f => ({ ...f, court_id: court.id, court_name: court.name, district: court.district, city: court.city }));
+  }
+
+  function handleCourtClear() {
+    setCourtSearch('');
+    setCourtDropOpen(false);
+    setForm(f => ({ ...f, court_id: '', court_name: '' }));
+  }
+
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -162,22 +176,70 @@ export default function CreateMatchPage() {
                       {districts.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">CHỌN SÂN CÓ SẴN</label>
-                    <select className="form-select" value={form.court_id || 'custom'} onChange={handleCourtSelect}>
-                      <option value="custom">-- Nhập sân mới --</option>
-                      {filteredCourts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                  <div className="form-group" style={{ position: 'relative' }}>
+                    <label className="form-label">TÊN SÂN (TÌM HOẶC NHẬP MỚI) *</label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Gõ tên sân để tìm hoặc nhập mới..."
+                        value={courtSearch || form.court_name}
+                        onChange={e => handleCourtSearchChange(e.target.value)}
+                        onFocus={() => setCourtDropOpen(true)}
+                      />
+                      {(courtSearch || form.court_name) && (
+                        <button
+                          type="button"
+                          onClick={handleCourtClear}
+                          style={{
+                            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                            background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    {courtDropOpen && (
+                      <div
+                        style={{
+                          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+                          background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
+                          borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-md)',
+                          maxHeight: '200px', overflowY: 'auto', marginTop: 4
+                        }}
+                      >
+                        {courts.filter(c => 
+                          (!form.district || c.district === form.district) &&
+                          (!courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase()))
+                        ).length > 0 ? (
+                          courts.filter(c => 
+                            (!form.district || c.district === form.district) &&
+                            (!courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase()))
+                          ).map(c => (
+                            <div
+                              key={c.id}
+                              onClick={() => handleCourtSelect(c)}
+                              style={{
+                                padding: '10px 14px', cursor: 'pointer', fontSize: '0.85rem',
+                                borderBottom: '1px solid var(--border-color)'
+                              }}
+                              onMouseDown={e => e.preventDefault()}
+                            >
+                              <div style={{ fontWeight: 600 }}>{c.name}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{c.address || `${c.district}, ${c.city}`}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <div style={{ padding: '10px 14px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Không tìm thấy sân có sẵn trong danh mục. Tên vừa nhập sẽ được dùng làm tên sân mới.
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                {!form.court_id && (
-                  <div className="form-group">
-                    <label className="form-label">TÊN SÂN (NHẬP MỚI)</label>
-                    <input className="form-input" placeholder="VD: Sân Cầu Lông Hoàng Anh"
-                      value={form.court_name} onChange={e => set('court_name', e.target.value)} />
-                  </div>
-                )}
               </div>
             )}
 
