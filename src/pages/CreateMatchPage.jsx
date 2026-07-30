@@ -162,88 +162,99 @@ export default function CreateMatchPage() {
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">THÀNH PHỐ *</label>
-                  <select className="form-select" value={form.city} onChange={e => set('city', e.target.value)}>
-                    {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                <div className="auth-grid-2">
-                  <div className="form-group">
-                    <label className="form-label">QUẬN / HUYỆN</label>
-                    <select className="form-select" value={form.district} onChange={e => set('district', e.target.value)}>
-                      <option value="">-- Chọn quận/huyện --</option>
-                      {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                {/* ── Court search ── */}
+                <div className="form-group" style={{ position: 'relative' }}>
+                  <label className="form-label">TÊN SÂN *</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Gõ tên sân để tìm hoặc nhập mới..."
+                      value={courtSearch || form.court_name}
+                      onChange={e => handleCourtSearchChange(e.target.value)}
+                      onFocus={() => setCourtDropOpen(true)}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setCourtDropOpen(false);
+                          if (courtSearch) set('court_name', courtSearch);
+                        }, 150);
+                      }}
+                    />
+                    {(courtSearch || form.court_name) && (
+                      <button type="button" onClick={handleCourtClear}
+                        style={{
+                          position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          color: 'var(--text-muted)', fontSize: '0.9rem'
+                        }}>✕</button>
+                    )}
                   </div>
-                  <div className="form-group" style={{ position: 'relative' }}>
-                    <label className="form-label">TÊN SÂN (TÌM HOẶC NHẬP MỚI) *</label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Gõ tên sân để tìm hoặc nhập mới..."
-                        value={courtSearch || form.court_name}
-                        onChange={e => handleCourtSearchChange(e.target.value)}
-                        onFocus={() => setCourtDropOpen(true)}
-                        onBlur={() => {
-                          // Khi click ra ngoài: dùng text đã nhập làm tên sân mới
-                          setTimeout(() => {
-                            setCourtDropOpen(false);
-                            if (courtSearch) {
-                              set('court_name', courtSearch);
-                            }
-                          }, 150);
-                        }}
-                      />
-                      {(courtSearch || form.court_name) && (
-                        <button
-                          type="button"
-                          onClick={handleCourtClear}
-                          style={{
-                            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                            background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem'
-                          }}
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
 
-                    {courtDropOpen && (() => {
-                      const filtered = courts.filter(c =>
-                        (!form.district || c.district === form.district) &&
-                        (!courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase()))
-                      );
-                      if (filtered.length === 0) return null; // Đóng dropdown, không hiển thị gì
-                      return (
-                        <div
-                          style={{
-                            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
-                            background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
-                            borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-md)',
-                            maxHeight: '200px', overflowY: 'auto', marginTop: 4
-                          }}
-                        >
-                          {filtered.map(c => (
-                            <div
-                              key={c.id}
-                              onClick={() => handleCourtSelect(c)}
-                              style={{
-                                padding: '10px 14px', cursor: 'pointer', fontSize: '0.85rem',
-                                borderBottom: '1px solid var(--border-color)'
-                              }}
-                              onMouseDown={e => e.preventDefault()}
-                            >
-                              <div style={{ fontWeight: 600 }}>{c.name}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{c.address || `${c.district}, ${c.city}`}</div>
+                  {/* Dropdown gợi ý */}
+                  {courtDropOpen && (() => {
+                    const filtered = courts.filter(c =>
+                      !courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase())
+                    );
+                    if (filtered.length === 0) return null;
+                    return (
+                      <div style={{
+                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+                        background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-md)',
+                        maxHeight: 220, overflowY: 'auto', marginTop: 4,
+                      }}>
+                        {filtered.map(c => (
+                          <div key={c.id} onClick={() => handleCourtSelect(c)}
+                            onMouseDown={e => e.preventDefault()}
+                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '0.85rem', borderBottom: '1px solid var(--border-color)' }}>
+                            <div style={{ fontWeight: 600 }}>{c.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              {c.address || [c.district, c.city].filter(Boolean).join(', ')}
                             </div>
-                          ))}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Sân có sẵn trong DB: hiện địa chỉ + link Google Maps */}
+                  {form.court_id && (() => {
+                    const court = courts.find(c => c.id === form.court_id);
+                    if (!court) return null;
+                    const addr = court.address || [court.district, court.city].filter(Boolean).join(', ');
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(court.name + ' ' + addr)}`;
+                    return (
+                      <div style={{
+                        marginTop: 8, padding: '10px 14px', borderRadius: 8,
+                        background: 'var(--brand-light)', border: '1px solid var(--brand-border)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                      }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)' }}>{court.name}</div>
+                          <div style={{ fontSize: '0.77rem', color: 'var(--text-muted)', marginTop: 2 }}>{addr}</div>
                         </div>
-                      );
-                    })()}
-                  </div>
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                          style={{
+                            flexShrink: 0, fontSize: '0.78rem', fontWeight: 600,
+                            color: 'var(--brand)', textDecoration: 'none',
+                            padding: '5px 12px', border: '1px solid var(--brand-border)',
+                            borderRadius: 6, background: 'var(--bg-surface)',
+                          }}>Xem Maps ↗</a>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Sân không có trong DB: hiện input địa chỉ tự nhập */}
+                  {!form.court_id && form.court_name && (
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Địa chỉ sân (tùy chọn)"
+                      value={form.court_address || ''}
+                      onChange={e => set('court_address', e.target.value)}
+                      style={{ marginTop: 8 }}
+                    />
+                  )}
                 </div>
               </div>
             )}
