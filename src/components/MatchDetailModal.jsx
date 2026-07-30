@@ -171,16 +171,16 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => { setTab(t.id); setStep('view'); }}
+              onClick={() => setTab(t.id)}
               style={{
                 flex: 1,
                 padding: '12px 8px',
                 fontSize: '0.8rem',
                 fontWeight: 700,
                 border: 'none',
-                borderBottom: (tab === t.id && step === 'view') ? '2px solid var(--brand)' : '2px solid transparent',
-                background: (tab === t.id && step === 'view') ? '#FFFFFF' : 'transparent',
-                color: (tab === t.id && step === 'view') ? 'var(--brand)' : '#64748B',
+                borderBottom: tab === t.id ? '2px solid var(--brand)' : '2px solid transparent',
+                background: tab === t.id ? '#FFFFFF' : 'transparent',
+                color: tab === t.id ? 'var(--brand)' : '#64748B',
                 cursor: 'pointer',
               }}
             >
