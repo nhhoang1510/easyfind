@@ -345,12 +345,11 @@ export default function CreateMatchPage() {
                     })}
                   </div>
                 </div>
-                  <div className="form-group">
-                    <label className="form-label">LOẠI CẦU</label>
-                    <select className="form-select" value={form.shuttlecock} onChange={e => set('shuttlecock', e.target.value)}>
-                      {(SHUTTLECOCKS || ['Ba Sao', 'Yonex Aerosensa', 'Victor NS']).map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
+                <div className="form-group">
+                  <label className="form-label">LOẠI CẦU</label>
+                  <select className="form-select" value={form.shuttlecock} onChange={e => set('shuttlecock', e.target.value)}>
+                    {(SHUTTLECOCKS || ['Ba Sao', 'Yonex Aerosensa', 'Victor NS']).map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
                 </div>
 
                 <div className="form-group">
