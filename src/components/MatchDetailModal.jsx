@@ -25,14 +25,20 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
   const [msg, setMsg] = useState(null);
   const [copyDone, setCopyDone] = useState(false);
   const [proofImage, setProofImage] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes (300 seconds) countdown
+  const [currentParticipant, setCurrentParticipant] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes (600 seconds) countdown
 
   useEffect(() => {
     if (tab === 'qr' && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
       return () => clearInterval(timer);
+    } else if (tab === 'qr' && timeLeft === 0 && currentParticipant) {
+      // Auto cancel after 10 mins if not paid
+      handleCancel(currentParticipant.id, true);
+      setTab('info');
+      setMsg({ type: 'error', text: 'Đã hết 10 phút giữ chỗ! Yêu cầu đăng ký của bạn đã bị hủy tự động.' });
     }
-  }, [tab, timeLeft]);
+  }, [tab, timeLeft, currentParticipant]);
 
   useEffect(() => {
     loadDetail();
@@ -57,10 +63,17 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
     setJoining(true); setMsg(null);
     try {
       const p = await api.joinMatch(match.id, { ...form, skill_level: form.skill_level || match.skill_level });
+      setCurrentParticipant(p);
       await loadDetail();
       const isWait = p.status === 'waitlist';
-      setMsg({ type: 'success', text: isWait ? `Đã vào danh sách dự bị! Bạn sẽ được thông báo khi có chỗ.` : `Đăng ký thành công! Bạn ở vị trí #${p.queue_order}` });
-      setTab(isWait ? 'players' : 'qr');
+      if (isWait) {
+        setMsg({ type: 'success', text: `Đã vào danh sách dự bị! Bạn sẽ được thông báo khi có chỗ.` });
+        setTab('players');
+      } else {
+        setTimeLeft(600); // 10 mins timer starts now
+        setMsg({ type: 'success', text: `Đăng ký thành công! Bạn có 10 phút để chuyển khoản cọc và gửi ảnh xác nhận.` });
+        setTab('qr');
+      }
       setForm({ player_name: user?.full_name || '', player_phone: user?.phone || '', skill_level: user?.skill_level || '', note: '' });
     } catch (err) {
       setMsg({ type: 'error', text: err.message });
@@ -69,16 +82,18 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
     }
   }
 
-  async function handleCancel(pid) {
-    if (!window.confirm('Bạn có chắc muốn hủy slot này không?')) return;
+  async function handleCancel(pid, silent = false) {
+    if (!silent && !window.confirm('Bạn có chắc muốn hủy slot này không?')) return;
     try {
       const res = await api.cancelParticipant(pid);
       await loadDetail();
-      let txt = 'Đã hủy slot thành công.';
-      if (res.promoted) txt += ` ${res.promoted.player_name} đã được đôn từ danh sách dự bị!`;
-      setMsg({ type: 'success', text: txt });
+      if (!silent) {
+        let txt = 'Đã hủy slot thành công.';
+        if (res.promoted) txt += ` ${res.promoted.player_name} đã được đôn từ danh sách dự bị!`;
+        setMsg({ type: 'success', text: txt });
+      }
     } catch (e) {
-      setMsg({ type: 'error', text: e.message });
+      if (!silent) setMsg({ type: 'error', text: e.message });
     }
   }
 
@@ -147,29 +162,29 @@ export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, 
           </button>
         </div>
 
-        {/* Tab switcher */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+        {/* Tab switcher - Responsive Flex Wrap */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, borderBottom: '1px solid #E2E8F0', background: '#F8FAFC', padding: '6px 8px' }}>
           {[
             { id: 'info',    label: 'THÔNG TIN KÈO' },
             { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots})` },
             { id: 'join',    label: isFull ? 'ĐĂNG KÝ DỰ BỊ' : 'ĐĂNG KÝ NGAY' },
-            { id: 'qr',      label: 'CỌC TIỀN (QR)' },
+            { id: 'qr',      label: 'CỌC TIỀN (QR 10P)' },
             { id: 'copy',    label: 'COPY BÀI ZALO' },
           ].map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               style={{
-                flex: 1,
-                padding: '12px 6px',
+                flex: '1 1 auto',
+                padding: '8px 12px',
                 fontSize: '0.78rem',
                 fontWeight: 700,
-                border: 'none',
-                borderBottom: tab === t.id ? '2px solid #E11D48' : '2px solid transparent',
-                background: tab === t.id ? '#FFFFFF' : 'transparent',
-                color: tab === t.id ? '#E11D48' : '#64748B',
+                borderRadius: 'var(--r-sm)',
+                border: tab === t.id ? '1px solid var(--brand)' : '1px solid transparent',
+                background: tab === t.id ? 'var(--bg-surface)' : 'transparent',
+                color: tab === t.id ? 'var(--brand)' : 'var(--text-muted)',
                 cursor: 'pointer',
-                letterSpacing: '0.3px',
+                whiteSpace: 'nowrap',
               }}
             >
               {t.label}
