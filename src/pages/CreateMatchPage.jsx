@@ -187,6 +187,15 @@ export default function CreateMatchPage() {
                         value={courtSearch || form.court_name}
                         onChange={e => handleCourtSearchChange(e.target.value)}
                         onFocus={() => setCourtDropOpen(true)}
+                        onBlur={() => {
+                          // Khi click ra ngoài: dùng text đã nhập làm tên sân mới
+                          setTimeout(() => {
+                            setCourtDropOpen(false);
+                            if (courtSearch) {
+                              set('court_name', courtSearch);
+                            }
+                          }, 150);
+                        }}
                       />
                       {(courtSearch || form.court_name) && (
                         <button
@@ -202,23 +211,22 @@ export default function CreateMatchPage() {
                       )}
                     </div>
 
-                    {courtDropOpen && (
-                      <div
-                        style={{
-                          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
-                          background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
-                          borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-md)',
-                          maxHeight: '200px', overflowY: 'auto', marginTop: 4
-                        }}
-                      >
-                        {courts.filter(c => 
-                          (!form.district || c.district === form.district) &&
-                          (!courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase()))
-                        ).length > 0 ? (
-                          courts.filter(c => 
-                            (!form.district || c.district === form.district) &&
-                            (!courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase()))
-                          ).map(c => (
+                    {courtDropOpen && (() => {
+                      const filtered = courts.filter(c =>
+                        (!form.district || c.district === form.district) &&
+                        (!courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase()))
+                      );
+                      if (filtered.length === 0) return null; // Đóng dropdown, không hiển thị gì
+                      return (
+                        <div
+                          style={{
+                            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+                            background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
+                            borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-md)',
+                            maxHeight: '200px', overflowY: 'auto', marginTop: 4
+                          }}
+                        >
+                          {filtered.map(c => (
                             <div
                               key={c.id}
                               onClick={() => handleCourtSelect(c)}
@@ -231,14 +239,10 @@ export default function CreateMatchPage() {
                               <div style={{ fontWeight: 600 }}>{c.name}</div>
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{c.address || `${c.district}, ${c.city}`}</div>
                             </div>
-                          ))
-                        ) : (
-                          <div style={{ padding: '10px 14px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            Không tìm thấy sân có sẵn trong danh mục. Tên vừa nhập sẽ được dùng làm tên sân mới.
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
