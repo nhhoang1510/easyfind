@@ -73,6 +73,10 @@ export default function CreateMatchPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (step < 3) {
+      setStep(s => s + 1);
+      return;
+    }
     setLoading(true); setMsg(null);
     try {
       const payload = { ...form, max_slots: parseInt(form.max_slots), cost_per_slot: parseFloat(form.cost_per_slot) || 0 };
