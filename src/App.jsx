@@ -21,8 +21,14 @@ function HomePage() {
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [error,          setError]          = useState(null);
   const [filters,        setFilters]        = useState({ district: '', gender_required: '', skill_level: '' });
-  const [selectedMatch,  setSelectedMatch]  = useState(null);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [initialTab, setInitialTab]       = useState('info');
   const [sortBy,         setSortBy]         = useState('time');
+
+  function handleOpenMatch(match, tab = 'info') {
+    setSelectedMatch(match);
+    setInitialTab(tab);
+  }
 
   const loadMatches = useCallback(async () => {
     setMatchesLoading(true); setError(null);
@@ -106,7 +112,12 @@ function HomePage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {openMatches.map(m => (
-                  <MatchCard key={m.id} match={m} onClick={setSelectedMatch} />
+                  <MatchCard
+                    key={m.id}
+                    match={m}
+                    onClick={match => handleOpenMatch(match, 'info')}
+                    onRegisterClick={match => handleOpenMatch(match, 'join')}
+                  />
                 ))}
               </div>
             )}
@@ -123,6 +134,7 @@ function HomePage() {
       {selectedMatch && (
         <MatchDetailModal
           match={selectedMatch}
+          initialTab={initialTab}
           onClose={() => setSelectedMatch(null)}
           onUpdate={loadMatches}
           onShowAuth={handleShowAuth}

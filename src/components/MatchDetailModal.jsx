@@ -8,14 +8,14 @@ import {
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
-export default function MatchDetailModal({ match: initMatch, onClose, onUpdate, onShowAuth }) {
+export default function MatchDetailModal({ match: initMatch, initialTab = 'info', onClose, onUpdate, onShowAuth }) {
   const { user } = useAuth();
   const isHost = user && (user.role === 'host') && (user.id === initMatch.host_id || user.full_name === initMatch.host_name);
 
   const [match, setMatch] = useState(initMatch);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
-  const [tab, setTab] = useState('info'); // info | players | join | qr | copy
+  const [tab, setTab] = useState(initialTab); // info | players | join | qr | copy
   const [form, setForm] = useState({
     player_name:  user?.full_name  || '',
     player_phone: user?.phone      || '',

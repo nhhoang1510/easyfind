@@ -16,7 +16,7 @@ const SKILL_COLOR = {
   'Khá':           { bg: '#FFF1F2', text: '#E11D48' },
 };
 
-export default function MatchCard({ match, onClick }) {
+export default function MatchCard({ match, onClick, onRegisterClick }) {
   const confirmed = parseInt(match.confirmed_count) || 0;
   const max       = parseInt(match.max_slots) || 0;
   const isFull    = confirmed >= max;
@@ -108,7 +108,7 @@ export default function MatchCard({ match, onClick }) {
         {/* CTA button */}
         <button
           className={`mc-cta ${isFull ? 'mc-cta--full' : ''}`}
-          onClick={() => onClick(match)}
+          onClick={() => (onRegisterClick ? onRegisterClick(match) : onClick(match))}
         >
           {isFull ? 'Đăng ký dự bị' : 'Đăng ký ngay'}
         </button>
