@@ -10,7 +10,7 @@ const defaultForm = {
   title: '', host_name: '', host_phone: '', court_name: '', court_id: '',
   city: 'Hà Nội', district: '', play_date: '', start_time: '', end_time: '',
   max_slots: 10, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
-  skill_level: 'Tất cả trình độ', note: '',
+  skill_levels: ['Tất cả trình độ'], note: '',
   bank_name: '', bank_account: '', bank_owner: '',
 };
 
@@ -49,7 +49,12 @@ export default function CreateMatchModal({ onClose, onCreated }) {
     e.preventDefault();
     setLoading(true); setMsg(null);
     try {
-      const payload = { ...form, max_slots: parseInt(form.max_slots), cost_per_slot: parseFloat(form.cost_per_slot) || 0 };
+      const payload = {
+        ...form,
+        max_slots: parseInt(form.max_slots),
+        cost_per_slot: parseFloat(form.cost_per_slot) || 0,
+        skill_level: form.skill_levels.join(', '), // string cho API
+      };
       const created = await api.createMatch(payload);
       onCreated(created);
       onClose();
@@ -178,18 +183,34 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Số suất (người) <span>*</span></label>
-                    <input id="create-max-slots" className="form-input" type="number" min={2} max={50} required value={form.max_slots} onChange={e => set('max_slots', e.target.value)} />
+                    <input
+                      id="create-max-slots" className="form-input" type="number"
+                      min={2} max={50} step={1} required
+                      value={form.max_slots}
+                      onChange={e => set('max_slots', Math.round(Math.abs(parseInt(e.target.value) || 2)))}
+                      onKeyDown={e => ['.', ',', 'e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                    />
                   </div>
                 </div>
 
                 <div className="grid-2">
                   <div className="form-group">
                     <label className="form-label">Giờ bắt đầu <span>*</span></label>
-                    <input id="create-start" className="form-input" type="time" required value={form.start_time} onChange={e => set('start_time', e.target.value)} />
+                    <input
+                      id="create-start" className="form-input" type="time" required
+                      value={form.start_time}
+                      onChange={e => set('start_time', e.target.value)}
+                      lang="vi" data-time-format="HH:mm"
+                    />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Giờ kết thúc <span>*</span></label>
-                    <input id="create-end" className="form-input" type="time" required value={form.end_time} onChange={e => set('end_time', e.target.value)} />
+                    <input
+                      id="create-end" className="form-input" type="time" required
+                      value={form.end_time}
+                      onChange={e => set('end_time', e.target.value)}
+                      lang="vi" data-time-format="HH:mm"
+                    />
                   </div>
                 </div>
 
@@ -207,20 +228,48 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Trình độ yêu cầu</label>
+                  <label className="form-label">Trình độ yêu cầu <span style={{ fontSize: '0.75rem', color: '#5B7A99', fontWeight: 400 }}>(chọn nhiều)</span></label>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {SKILL_LEVELS.map(s => (
-                      <button
-                        key={s} type="button"
-                        onClick={() => set('skill_level', s)}
-                        style={{
-                          padding: '6px 14px', borderRadius: 100, fontSize: '0.8rem', fontWeight: 600,
-                          border: form.skill_level === s ? '1px solid #00F5C4' : '1px solid rgba(255,255,255,0.08)',
-                          background: form.skill_level === s ? 'rgba(0,245,196,0.12)' : 'rgba(255,255,255,0.04)',
-                          color: form.skill_level === s ? '#00F5C4' : '#9DB4CC', cursor: 'pointer',
-                        }}
-                      >{s}</button>
-                    ))}
+                    {SKILL_LEVELS.map(s => {
+                      const isAll = s === 'Tất cả trình độ';
+                      const checked = form.skill_levels.includes(s);
+                      return (
+                        <label
+                          key={s}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '6px 14px', borderRadius: 100, fontSize: '0.8rem', fontWeight: 600,
+                            border: checked ? '1px solid #00F5C4' : '1px solid rgba(255,255,255,0.08)',
+                            background: checked ? 'rgba(0,245,196,0.12)' : 'rgba(255,255,255,0.04)',
+                            color: checked ? '#00F5C4' : '#9DB4CC', cursor: 'pointer',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            style={{ accentColor: '#00F5C4', width: 14, height: 14, cursor: 'pointer' }}
+                            onChange={() => {
+                              if (isAll) {
+                                // Nếu click "Tất cả trình độ", bỏ hết cái khác, chỉ giữ nó
+                                set('skill_levels', ['Tất cả trình độ']);
+                              } else {
+                                setForm(f => {
+                                  let next = f.skill_levels.filter(x => x !== 'Tất cả trình độ'); // bỏ "Tất cả"
+                                  if (next.includes(s)) {
+                                    next = next.filter(x => x !== s);
+                                  } else {
+                                    next = [...next, s];
+                                  }
+                                  return { ...f, skill_levels: next.length ? next : ['Tất cả trình độ'] };
+                                });
+                              }
+                            }}
+                          />
+                          {s}
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -269,7 +318,7 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                       ['⏰', 'Giờ', `${form.start_time} – ${form.end_time}`],
                       ['👥', 'Số người', form.max_slots + ' suất'],
                       ['💰', 'Chi phí', form.cost_per_slot ? (parseInt(form.cost_per_slot)).toLocaleString('vi-VN') + 'đ' : 'Miễn phí'],
-                      ['🎯', 'Trình độ', form.skill_level],
+                      ['🎯', 'Trình độ', form.skill_levels.join(', ')],
                     ].map(([icon, label, value]) => value ? (
                       <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <span>{icon}</span>
