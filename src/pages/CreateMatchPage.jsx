@@ -316,7 +316,8 @@ export default function CreateMatchPage() {
                     <option value="">-- Chọn ngân hàng --</option>
                     {(BANKS || ['Vietcombank', 'Techcombank', 'MB Bank', 'BIDV', 'Agribank', 'VPBank', 'ACB', 'TPBank']).map(b => {
                       const bankName = typeof b === 'string' ? b : (b?.name || b?.code || '');
-                      return <option key={bankName} value={bankName}>{bankName}</option>;
+                      const bankCode = typeof b === 'string' ? b : (b?.code || b?.name || '');
+                      return <option key={bankCode} value={bankCode}>{bankName}</option>;
                     })}
                   </select>
                 </div>
