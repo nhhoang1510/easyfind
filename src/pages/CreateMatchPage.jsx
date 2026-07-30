@@ -11,7 +11,7 @@ const defaultForm = {
   title: '', host_name: '', host_phone: '', court_name: '', court_id: '',
   city: 'Hà Nội', district: '', play_date: '', start_time: '', end_time: '',
   max_slots: 10, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
-  skill_level: 'Tất cả trình độ', note: '',
+  skill_levels: ['Tất cả trình độ'], note: '',
   bank_name: '', bank_account: '', bank_owner: '',
 };
 
@@ -82,7 +82,12 @@ export default function CreateMatchPage() {
     }
     setLoading(true); setMsg(null);
     try {
-      const payload = { ...form, max_slots: parseInt(form.max_slots), cost_per_slot: parseFloat(form.cost_per_slot) || 0 };
+      const payload = {
+        ...form,
+        max_slots: parseInt(form.max_slots),
+        cost_per_slot: parseFloat(form.cost_per_slot) || 0,
+        skill_level: (form.skill_levels || ['Tất cả trình độ']).join(', '),
+      };
       await api.createMatch(payload);
       navigate('/');
     } catch (err) {
@@ -271,12 +276,12 @@ export default function CreateMatchPage() {
                 <div className="auth-grid-2">
                   <div className="form-group">
                     <label className="form-label">GIỜ BẮT ĐẦU *</label>
-                    <input type="time" className="form-input" required
+                    <input type="time" className="form-input" required lang="vi" data-time-format="HH:mm"
                       value={form.start_time} onChange={e => set('start_time', e.target.value)} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">GIỜ KẾT THÚC *</label>
-                    <input type="time" className="form-input" required
+                    <input type="time" className="form-input" required lang="vi" data-time-format="HH:mm"
                       value={form.end_time} onChange={e => set('end_time', e.target.value)} />
                   </div>
                 </div>
@@ -284,8 +289,10 @@ export default function CreateMatchPage() {
                 <div className="auth-grid-2">
                   <div className="form-group">
                     <label className="form-label">SỐ SUẤT TỐI ĐA *</label>
-                    <input type="number" className="form-input" required min={2} max={50}
-                      value={form.max_slots} onChange={e => set('max_slots', e.target.value)} />
+                    <input type="number" className="form-input" required min={2} max={50} step={1}
+                      value={form.max_slots}
+                      onChange={e => set('max_slots', Math.round(Math.abs(parseInt(e.target.value) || 2)))}
+                      onKeyDown={e => ['.', ',', 'e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">GIÁ / NGƯỜI (VNĐ)</label>
@@ -294,14 +301,50 @@ export default function CreateMatchPage() {
                   </div>
                 </div>
 
-                <div className="auth-grid-2">
-                  <div className="form-group">
-                    <label className="form-label">TRÌNH ĐỘ YÊU CẦU</label>
-                    <select className="form-select" value={form.skill_level} onChange={e => set('skill_level', e.target.value)}>
-                      <option value="Tất cả trình độ">Tất cả trình độ</option>
-                      {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                <div className="form-group">
+                  <label className="form-label">TRÌNH ĐỘ YÊU CẦU <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>(chọn nhiều)</span></label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                    {['Tất cả trình độ', ...SKILL_LEVELS].map(s => {
+                      const isAll = s === 'Tất cả trình độ';
+                      const checked = (form.skill_levels || []).includes(s);
+                      return (
+                        <label
+                          key={s}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '6px 14px', borderRadius: 100, fontSize: '0.8rem', fontWeight: 600,
+                            border: checked ? '1px solid var(--brand)' : '1px solid var(--border-color)',
+                            background: checked ? 'var(--brand-light)' : 'var(--bg-surface)',
+                            color: checked ? 'var(--brand)' : 'var(--text-sub)', cursor: 'pointer',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            style={{ accentColor: 'var(--brand)', width: 14, height: 14, cursor: 'pointer' }}
+                            onChange={() => {
+                              if (isAll) {
+                                set('skill_levels', ['Tất cả trình độ']);
+                              } else {
+                                setForm(f => {
+                                  let next = (f.skill_levels || []).filter(x => x !== 'Tất cả trình độ');
+                                  if (next.includes(s)) {
+                                    next = next.filter(x => x !== s);
+                                  } else {
+                                    next = [...next, s];
+                                  }
+                                  return { ...f, skill_levels: next.length ? next : ['Tất cả trình độ'] };
+                                });
+                              }
+                            }}
+                          />
+                          {s}
+                        </label>
+                      );
+                    })}
                   </div>
+                </div>
                   <div className="form-group">
                     <label className="form-label">LOẠI CẦU</label>
                     <select className="form-select" value={form.shuttlecock} onChange={e => set('shuttlecock', e.target.value)}>
