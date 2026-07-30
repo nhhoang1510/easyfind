@@ -1,56 +1,98 @@
-// src/pages/RegisterPage.jsx — Premium redesign with animated stepper
+// src/pages/RegisterPage.jsx — Google-style multi-step registration
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { SKILL_LEVELS, CITIES } from '../utils/helpers';
 
+/* ── Floating label input ───────────────────────────────── */
+function FloatInput({ id, label, type = 'text', value, onChange, required, autoFocus }) {
+  const [focused, setFocused] = useState(false);
+  const lifted = focused || !!value;
+  return (
+    <div style={{ position: 'relative' }}>
+      <label
+        htmlFor={id}
+        style={{
+          position: 'absolute',
+          left: 14, zIndex: 1, pointerEvents: 'none',
+          top: lifted ? -9 : '50%',
+          transform: lifted ? 'none' : 'translateY(-50%)',
+          fontSize: lifted ? '0.72rem' : '0.92rem',
+          fontWeight: lifted ? 500 : 400,
+          color: focused ? '#1a73e8' : '#5f6368',
+          background: '#fff',
+          padding: lifted ? '0 4px' : '0',
+          transition: 'all 0.15s ease',
+        }}
+      >{label}</label>
+      <input
+        id={id} type={type} value={value} onChange={onChange}
+        required={required} autoFocus={autoFocus}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          width: '100%', padding: '15px 14px',
+          border: `1px solid ${focused ? '#1a73e8' : '#dadce0'}`,
+          borderRadius: 6, fontSize: '0.95rem',
+          color: '#202124', background: '#fff', outline: 'none',
+          boxShadow: focused ? '0 0 0 2px rgba(26,115,232,0.15)' : 'none',
+          transition: 'border-color 0.15s, box-shadow 0.15s',
+          fontFamily: 'inherit',
+        }}
+      />
+    </div>
+  );
+}
+
+/* ── Step definitions ──────────────────────────────────── */
 const STEPS = [
-  { id: 'role',    label: 'Vai trò' },
-  { id: 'info',    label: 'Thông tin' },
-  { id: 'account', label: 'Tài khoản' },
+  { title: 'Tạo tài khoản',     subtitle: 'Nhập tên của bạn' },
+  { title: 'Thông tin cá nhân', subtitle: 'Cho chúng tôi biết thêm về bạn' },
+  { title: 'Tạo mật khẩu',      subtitle: 'Dùng ít nhất 6 ký tự' },
 ];
 
+/* ── Main ──────────────────────────────────────────────── */
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPw, setShowPw] = useState(false);
+
   const [form, setForm] = useState({
-    full_name: '',
-    username: '',
-    password: '',
-    confirm_password: '',
-    role: '',
-    gender: 'male',
+    full_name: '', username: '',
+    password: '', confirm_password: '',
+    role: 'player', gender: 'male',
+    skill_level: 'Trung bình', city: 'Hà Nội',
   });
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })); setError(''); }
 
   function nextStep() {
-    if (step === 0 && !form.role) { setError('Hãy chọn vai trò để tiếp tục'); return; }
-    if (step === 1) {
-      if (!form.full_name.trim()) { setError('Vui lòng nhập họ và tên'); return; }
+    if (step === 0) {
+      if (!form.full_name.trim()) return setError('Vui lòng nhập họ và tên');
+      if (!form.username.trim())  return setError('Vui lòng nhập tên đăng nhập');
     }
-    setStep(s => Math.min(s + 1, 2));
+    if (step === 2) {
+      if (!form.password)                              return setError('Vui lòng nhập mật khẩu');
+      if (form.password.length < 6)                    return setError('Mật khẩu phải ít nhất 6 ký tự');
+      if (form.password !== form.confirm_password)     return setError('Mật khẩu xác nhận không khớp');
+    }
+    setError('');
+    setStep(s => Math.min(s + 1, STEPS.length - 1));
   }
-
-  function prevStep() { setStep(s => Math.max(s - 1, 0)); setError(''); }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
-    if (!form.username.trim())    { setError('Tên đăng nhập không được để trống'); return; }
-    if (form.password.length < 6) { setError('Mật khẩu phải từ 6 ký tự trở lên'); return; }
-    if (form.password !== form.confirm_password) { setError('Mật khẩu xác nhận không khớp'); return; }
-    setLoading(true);
+    if (!form.password)                          return setError('Vui lòng nhập mật khẩu');
+    if (form.password.length < 6)                return setError('Mật khẩu phải ít nhất 6 ký tự');
+    if (form.password !== form.confirm_password) return setError('Mật khẩu xác nhận không khớp');
+    setError(''); setLoading(true);
     try {
-      await register({
-        username: form.username.trim(),
-        full_name: form.full_name.trim() || form.username.trim(),
-        password: form.password,
-        role: form.role,
-        gender: form.gender,
-      });
+      const { confirm_password, ...payload } = form;
+      await register(payload);
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -59,219 +101,198 @@ export default function RegisterPage() {
     }
   }
 
+  const isLast = step === STEPS.length - 1;
+
   return (
-    <div className="rp">
-      {/* ── Decorative background ── */}
-      <div className="rp-bg">
-        <div className="rp-bg-orb rp-bg-orb--1" />
-        <div className="rp-bg-orb rp-bg-orb--2" />
-        <div className="rp-bg-orb rp-bg-orb--3" />
-      </div>
+    <div style={{
+      minHeight: '100vh', background: '#f1f3f4',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: 16, fontFamily: "'Inter', 'Google Sans', system-ui, sans-serif",
+    }}>
+      {/* Card */}
+      <div style={{
+        background: '#fff', borderRadius: 16,
+        boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
+        width: '100%', maxWidth: 640,
+        display: 'flex', minHeight: 370,
+        overflow: 'hidden',
+      }}>
+        {/* Left panel */}
+        <div style={{
+          width: 220, flexShrink: 0,
+          padding: '40px 28px',
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}>
+          <div>
+            {/* Logo */}
+            <div style={{
+              width: 40, height: 40, borderRadius: 10, marginBottom: 28,
+              background: 'linear-gradient(135deg, #1a73e8 0%, #4285f4 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: '1.1rem', fontWeight: 700,
+            }}>E</div>
 
-      {/* ── Top nav ── */}
-      <nav className="rp-nav">
-        <Link to="/" className="rp-nav-brand">🏸 EasyFind</Link>
-        <Link to="/login" className="rp-nav-login">Đã có tài khoản? <strong>Đăng nhập</strong></Link>
-      </nav>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#202124', lineHeight: 1.25, marginBottom: 10 }}>
+              {STEPS[step].title}
+            </h1>
+            <p style={{ fontSize: '0.88rem', color: '#5f6368', lineHeight: 1.6 }}>
+              {STEPS[step].subtitle}
+            </p>
+          </div>
 
-      {/* ── Card ── */}
-      <div className="rp-card">
-        {/* Stepper */}
-        <div className="rp-stepper">
-          {STEPS.map((s, i) => (
-            <div key={s.id} className={`rp-step ${i <= step ? 'rp-step--active' : ''} ${i < step ? 'rp-step--done' : ''}`}>
-              <div className="rp-step-num">
-                {i < step ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <span className="rp-step-label">{s.label}</span>
-              {i < STEPS.length - 1 && <div className={`rp-step-line ${i < step ? 'rp-step-line--done' : ''}`} />}
-            </div>
-          ))}
+          {/* Progress bar */}
+          <div style={{ display: 'flex', gap: 5, marginTop: 32 }}>
+            {STEPS.map((_, i) => (
+              <div key={i} style={{
+                height: 4, flex: i <= step ? 1.5 : 1,
+                borderRadius: 9,
+                background: i <= step ? '#1a73e8' : '#dadce0',
+                transition: 'all 0.3s ease',
+              }} />
+            ))}
+          </div>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="rp-alert">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {error}
-          </div>
-        )}
+        {/* Right panel */}
+        <div style={{ flex: 1, padding: '40px 36px', display: 'flex', flexDirection: 'column' }}>
 
-        {/* ── Step 0: Role ── */}
-        {step === 0 && (
-          <div className="rp-step-panel">
-            <div className="rp-panel-head">
-              <h1>Chào mừng đến EasyFind!</h1>
-              <p>Bạn muốn tham gia với vai trò nào?</p>
+          {/* Error */}
+          {error && (
+            <div style={{
+              marginBottom: 16, padding: '9px 13px',
+              background: '#fce8e6', borderRadius: 6,
+              fontSize: '0.84rem', color: '#c5221f', fontWeight: 500,
+            }}>
+              {error}
             </div>
+          )}
 
-            <div className="rp-role-grid">
-              <button
-                type="button"
-                className={`rp-role-card ${form.role === 'player' ? 'rp-role-card--selected' : ''}`}
-                onClick={() => set('role', 'player')}
-              >
-                <div className="rp-role-icon">🏸</div>
-                <div className="rp-role-title">Người chơi</div>
-                <div className="rp-role-desc">Tìm kèo cầu lông gần bạn, đặt slot và tham gia giao lưu</div>
-                {form.role === 'player' && <div className="rp-role-check">✓</div>}
-              </button>
+          <form
+            onSubmit={isLast ? handleSubmit : e => { e.preventDefault(); nextStep(); }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}
+          >
+            {/* STEP 0: Tên & Username */}
+            {step === 0 && (
+              <>
+                <FloatInput id="rg-name" label="Họ và tên" value={form.full_name}
+                  onChange={e => set('full_name', e.target.value)} autoFocus />
+                <FloatInput id="rg-user" label="Tên đăng nhập" value={form.username}
+                  onChange={e => set('username', e.target.value)} />
+              </>
+            )}
 
-              <button
-                type="button"
-                className={`rp-role-card ${form.role === 'host' ? 'rp-role-card--selected' : ''}`}
-                onClick={() => set('role', 'host')}
-              >
-                <div className="rp-role-icon">🏆</div>
-                <div className="rp-role-title">Host (Tổ chức)</div>
-                <div className="rp-role-desc">Tạo kèo, quản lý danh sách người chơi và duyệt thanh toán</div>
-                {form.role === 'host' && <div className="rp-role-check">✓</div>}
-              </button>
-            </div>
-
-            <button type="button" className="rp-btn rp-btn--primary" onClick={nextStep} disabled={!form.role}>
-              Tiếp tục →
-            </button>
-          </div>
-        )}
-
-        {/* ── Step 1: Personal Info ── */}
-        {step === 1 && (
-          <div className="rp-step-panel">
-            <div className="rp-panel-head">
-              <h1>Thông tin cá nhân</h1>
-              <p>Giúp cộng đồng biết thêm về bạn</p>
-            </div>
-
-            <div className="rp-fields">
-              <div className="rp-field">
-                <label className="rp-label">Họ và tên <span className="rp-required">*</span></label>
-                <input
-                  type="text"
-                  className="rp-input"
-                  placeholder="Nguyễn Văn A"
-                  value={form.full_name}
-                  onChange={e => set('full_name', e.target.value)}
-                  autoFocus
-                />
-              </div>
-
-              <div className="rp-field">
-                <label className="rp-label">Giới tính</label>
-                <div className="rp-gender-row">
-                  {[
-                    { value: 'male',   label: 'Nam',  icon: '♂' },
-                    { value: 'female', label: 'Nữ',   icon: '♀' },
-                    { value: 'other',  label: 'Khác', icon: '⚧' },
-                  ].map(g => (
-                    <button
-                      key={g.value}
-                      type="button"
-                      className={`rp-gender-btn ${form.gender === g.value ? 'rp-gender-btn--active' : ''}`}
-                      onClick={() => set('gender', g.value)}
-                    >
-                      <span className="rp-gender-icon">{g.icon}</span>
-                      {g.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="rp-btn-row">
-              <button type="button" className="rp-btn rp-btn--ghost" onClick={prevStep}>← Quay lại</button>
-              <button type="button" className="rp-btn rp-btn--primary" onClick={nextStep}>Tiếp tục →</button>
-            </div>
-          </div>
-        )}
-
-        {/* ── Step 2: Account ── */}
-        {step === 2 && (
-          <form className="rp-step-panel" onSubmit={handleSubmit}>
-            <div className="rp-panel-head">
-              <h1>Tạo tài khoản</h1>
-              <p>Bước cuối cùng — thiết lập đăng nhập của bạn</p>
-            </div>
-
-            <div className="rp-fields">
-              <div className="rp-field">
-                <label className="rp-label">Tên đăng nhập <span className="rp-required">*</span></label>
-                <div className="rp-input-group">
-                  <span className="rp-input-prefix">@</span>
-                  <input
-                    type="text"
-                    className="rp-input rp-input--prefixed"
-                    placeholder="nguyen_van_a"
-                    required
-                    autoFocus
-                    value={form.username}
-                    onChange={e => set('username', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="rp-field">
-                <label className="rp-label">Mật khẩu <span className="rp-required">*</span></label>
-                <input
-                  type="password"
-                  className="rp-input"
-                  placeholder="Ít nhất 6 ký tự"
-                  required
-                  value={form.password}
-                  onChange={e => set('password', e.target.value)}
-                />
-                {form.password && (
-                  <div className="rp-pw-strength">
-                    <div className={`rp-pw-bar ${form.password.length >= 10 ? 'rp-pw-bar--strong' : form.password.length >= 6 ? 'rp-pw-bar--ok' : 'rp-pw-bar--weak'}`} />
-                    <span>{form.password.length >= 10 ? 'Mạnh' : form.password.length >= 6 ? 'Đạt yêu cầu' : 'Yếu'}</span>
+            {/* STEP 1: Vai trò, Giới tính, Trình độ, Thành phố */}
+            {step === 1 && (
+              <>
+                {/* Vai trò */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Vai trò</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {[
+                      { value: 'player', label: 'Người chơi',    desc: 'Tìm kèo, tham gia cộng đồng' },
+                      { value: 'host',   label: 'Người tổ chức', desc: 'Tạo kèo, quản lý sân chơi' },
+                    ].map(r => (
+                      <div key={r.value} onClick={() => set('role', r.value)} style={{
+                        padding: '11px 12px', cursor: 'pointer', borderRadius: 8,
+                        border: `1.5px solid ${form.role === r.value ? '#1a73e8' : '#dadce0'}`,
+                        background: form.role === r.value ? '#e8f0fe' : '#fff',
+                        transition: 'all 0.15s',
+                      }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.88rem', color: form.role === r.value ? '#1a73e8' : '#202124' }}>{r.label}</div>
+                        <div style={{ fontSize: '0.76rem', color: '#5f6368', marginTop: 2 }}>{r.desc}</div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
 
-              <div className="rp-field">
-                <label className="rp-label">Xác nhận mật khẩu <span className="rp-required">*</span></label>
-                <input
-                  type="password"
-                  className="rp-input"
-                  placeholder="Nhập lại mật khẩu"
-                  required
-                  value={form.confirm_password}
-                  onChange={e => set('confirm_password', e.target.value)}
-                />
-              </div>
-            </div>
+                {/* Giới tính */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Giới tính</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[{ value: 'male', label: 'Nam' }, { value: 'female', label: 'Nữ' }, { value: 'other', label: 'Khác' }].map(g => (
+                      <div key={g.value} onClick={() => set('gender', g.value)} style={{
+                        flex: 1, textAlign: 'center', padding: '10px', cursor: 'pointer', borderRadius: 8,
+                        border: `1.5px solid ${form.gender === g.value ? '#1a73e8' : '#dadce0'}`,
+                        background: form.gender === g.value ? '#e8f0fe' : '#fff',
+                        fontWeight: 600, fontSize: '0.88rem',
+                        color: form.gender === g.value ? '#1a73e8' : '#3c4043',
+                        transition: 'all 0.15s',
+                      }}>{g.label}</div>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Summary chip */}
-            <div className="rp-summary">
-              <span>{form.role === 'host' ? '🏆 Host' : '🏸 Player'}</span>
-              <span>•</span>
-              <span>{form.full_name || '—'}</span>
-              <span>•</span>
-              <span>{form.gender === 'male' ? 'Nam' : form.gender === 'female' ? 'Nữ' : 'Khác'}</span>
-            </div>
+                {/* Trình độ + Thành phố */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Trình độ</div>
+                    <select value={form.skill_level} onChange={e => set('skill_level', e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #dadce0', borderRadius: 6, fontSize: '0.9rem', color: '#202124', background: '#fff', fontFamily: 'inherit', outline: 'none' }}>
+                      {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Thành phố</div>
+                    <select value={form.city} onChange={e => set('city', e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #dadce0', borderRadius: 6, fontSize: '0.9rem', color: '#202124', background: '#fff', fontFamily: 'inherit', outline: 'none' }}>
+                      {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
 
-            <div className="rp-btn-row">
-              <button type="button" className="rp-btn rp-btn--ghost" onClick={prevStep}>← Quay lại</button>
-              <button type="submit" className="rp-btn rp-btn--primary" disabled={loading}>
-                {loading ? (
-                  <span className="rp-spinner" />
-                ) : (
-                  'Tạo tài khoản 🚀'
-                )}
+            {/* STEP 2: Mật khẩu */}
+            {step === 2 && (
+              <>
+                <FloatInput id="rg-pw" label="Mật khẩu" type={showPw ? 'text' : 'password'}
+                  value={form.password} onChange={e => set('password', e.target.value)} autoFocus />
+                <FloatInput id="rg-pw2" label="Xác nhận mật khẩu" type={showPw ? 'text' : 'password'}
+                  value={form.confirm_password} onChange={e => set('confirm_password', e.target.value)} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.87rem', color: '#5f6368', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)}
+                    style={{ accentColor: '#1a73e8', width: 15, height: 15 }} />
+                  Hiện mật khẩu
+                </label>
+              </>
+            )}
+
+            {/* Footer nav */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 8 }}>
+              {step === 0 ? (
+                <Link to="/login" style={{ fontSize: '0.88rem', color: '#1a73e8', textDecoration: 'none', fontWeight: 500 }}>
+                  Đăng nhập
+                </Link>
+              ) : (
+                <button type="button" onClick={() => { setStep(s => s - 1); setError(''); }}
+                  style={{ background: 'none', border: 'none', color: '#5f6368', fontSize: '0.88rem', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>
+                  Quay lại
+                </button>
+              )}
+
+              <button type="submit" disabled={loading}
+                style={{
+                  background: loading ? '#aecbfa' : '#1a73e8',
+                  color: '#fff', border: 'none', borderRadius: 100,
+                  padding: '10px 28px', fontWeight: 600, fontSize: '0.92rem',
+                  cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit',
+                  transition: 'background 0.15s',
+                }}>
+                {loading ? 'Đang xử lý...' : isLast ? 'Tạo tài khoản' : 'Tiếp theo'}
               </button>
             </div>
           </form>
-        )}
+        </div>
       </div>
 
-      {/* Bottom text */}
-      <p className="rp-footer">
-        Bằng việc đăng ký, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> của EasyFind
-      </p>
+      {/* Footer */}
+      <div style={{ display: 'flex', gap: 24, marginTop: 20, fontSize: '0.8rem', color: '#5f6368' }}>
+        <a href="#" style={{ color: '#5f6368', textDecoration: 'none' }}>Trợ giúp</a>
+        <a href="#" style={{ color: '#5f6368', textDecoration: 'none' }}>Quyền riêng tư</a>
+        <a href="#" style={{ color: '#5f6368', textDecoration: 'none' }}>Điều khoản</a>
+      </div>
     </div>
   );
 }
