@@ -455,9 +455,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                               setMsg({ type: 'success', text: 'Đang tự động kiểm tra tính hợp lệ của hình ảnh...' });
                               const res = await api.verifyBill({ image: base64, expected_amount: match.cost_per_slot, type: 'deposit' });
                               if (res.is_authentic) {
-                                setMsg({ type: 'success', text: `Đã xác minh (${res.confidence_score}% độ tin cậy): ${res.message}` });
+                                setMsg({ type: 'success', text: `Xác minh thành công: ${res.message}` });
                               } else {
-                                setMsg({ type: 'error', text: `Cảnh báo (${res.confidence_score}% độ tin cậy): ${res.message} ${res.warning || ''}` });
+                                setMsg({ type: 'error', text: `Cảnh báo: ${res.message} ${res.warning || ''}` });
                               }
                             } catch (err) {
                               setMsg({ type: 'error', text: 'Không thể kiểm tra hình ảnh: ' + err.message });
@@ -476,11 +476,11 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                       className="btn btn-primary"
                       style={{ width: '100%', marginTop: 12, justifyContent: 'center', gap: 8 }}
                       onClick={() => {
-                        setMsg({ type: 'success', text: 'Đã gửi ảnh xác nhận cọc kèm chứng chỉ xác minh AI! Trạng thái giữ chỗ hiện tại là PENDING.' });
+                        setMsg({ type: 'success', text: 'Đã gửi ảnh xác nhận cọc tiền thành công. Trạng thái giữ chỗ hiện tại là PENDING.' });
                         setTab('players');
                       }}
                     >
-                      🛡️ XÁC NHẬN ĐÃ THANH TOÁN (KÈM XÁC MINH AI)
+                      XÁC NHẬN ĐÃ THANH TOÁN
                     </button>
                   </div>
                 </div>

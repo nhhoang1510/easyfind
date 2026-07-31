@@ -264,10 +264,10 @@ export default function CreateMatchPage() {
                     />
                   )}
 
-                  {/* Host Upload Ảnh Minh Chứng Đặt Sân (Quét AI) */}
+                  {/* Host Upload Ảnh Minh Chứng Đặt Sân */}
                   <div style={{ marginTop: 16, padding: 14, background: 'var(--bg-subtle)', border: '1px dashed var(--border-color)', borderRadius: 8 }}>
                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand)', fontWeight: 700 }}>
-                      <span>Minh chứng đặt sân (Hệ thống tự động xác minh uy tín Host)</span>
+                      <span>Minh chứng đặt sân</span>
                     </label>
                     <input
                       type="file"
@@ -283,9 +283,9 @@ export default function CreateMatchPage() {
                               setMsg({ type: 'success', text: 'Đang kiểm tra minh chứng đặt sân...' });
                               const res = await api.verifyBill({ image: reader.result, type: 'court_proof' });
                               if (res.is_authentic) {
-                                setMsg({ type: 'success', text: `Xác minh thành công (${res.confidence_score}%): Minh chứng hợp lệ. Kèo của bạn đã được duyệt tích xanh uy tín.` });
+                                setMsg({ type: 'success', text: `Xác minh thành công: Minh chứng hợp lệ, kèo đã được duyệt uy tín.` });
                               } else {
-                                setMsg({ type: 'error', text: `Cảnh báo (${res.confidence_score}%): ${res.message}` });
+                                setMsg({ type: 'error', text: `Cảnh báo: ${res.message}` });
                               }
                             } catch (err) {
                               setMsg({ type: 'error', text: 'Không thể kiểm tra ảnh minh chứng: ' + err.message });
