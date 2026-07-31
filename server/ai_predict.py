@@ -124,15 +124,24 @@ def predict_bill(image_base64, model_path, expected_amount=None):
                 amount_matched = False
                 amount_warning = f"Số tiền phát hiện trên bill ({detected_amounts[0]:,}đ) nhỏ hơn mức cọc yêu cầu ({expected_amount:,}đ)."
 
-        status_msg = "Xác minh thành công: Minh chứng hợp lệ và không có dấu hiệu chỉnh sửa."
+        # Phân loại lý do cảnh báo cụ thể
+        warning_type = None
+        status_msg = "Xác minh thành công: Minh chứng hợp lệ."
+
         if is_fake:
-            status_msg = "Phát hiện bất thường: Ảnh có dấu hiệu bị can thiệp hoặc chỉnh sửa."
+            warning_type = "IMAGE_EDITED"
+            status_msg = "Cảnh báo: Ảnh có dấu hiệu bị cắt ghép hoặc chỉnh sửa qua phần mềm."
         elif not amount_matched and amount_warning:
-            status_msg = f"Cảnh báo số tiền: {amount_warning}"
+            warning_type = "AMOUNT_MISMATCH"
+            status_msg = f"Cảnh báo: {amount_warning}"
+        elif confidence < 0.70:
+            warning_type = "AI_GENERATED_SUSPECT"
+            status_msg = "Cảnh báo: Ảnh có dấu hiệu bất thường, nghi vấn được tạo giả bằng AI hoặc phần mềm tạo bill."
 
         return {
             "success": True,
-            "is_authentic": not is_fake and amount_matched,
+            "is_authentic": not is_fake and amount_matched and confidence >= 0.70,
+            "warning_type": warning_type,
             "confidence_score": round(confidence * 100, 1),
             "fake_probability": round(fake_prob * 100, 1),
             "real_probability": round(real_prob * 100, 1),

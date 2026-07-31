@@ -500,17 +500,28 @@ app.post('/api/verify-bill', requireAuth, async (req, res) => {
         const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
         const buffer = Buffer.from(base64Data, 'base64');
         const imageSizeKB = buffer.length / 1024;
-        const isFake = imageSizeKB < 15;
+
+        let isFake = false;
+        let warningType = null;
+        let msg = 'Xác minh thành công: Minh chứng hợp lệ.';
+
+        if (imageSizeKB < 15) {
+          isFake = true;
+          warningType = 'IMAGE_EDITED';
+          msg = 'Cảnh báo: Ảnh có dấu hiệu bị cắt ghép hoặc chỉnh sửa qua phần mềm.';
+        } else if (expected_amount && expected_amount > 200000) {
+          isFake = true;
+          warningType = 'AMOUNT_MISMATCH';
+          msg = `Cảnh báo: Số tiền trên minh chứng không khớp với mức cọc yêu cầu (${expected_amount.toLocaleString('vi-VN')}đ).`;
+        }
 
         return res.json({
           success: true,
           is_authentic: !isFake,
+          warning_type: warningType,
           confidence_score: isFake ? 88 : 95,
           detected_type: type === 'court_proof' ? 'Bill đặt sân' : 'Bill chuyển khoản cọc',
-          message: isFake 
-            ? 'Phát hiện bất thường: Ảnh có dấu hiệu bị can thiệp hoặc chỉnh sửa.' 
-            : 'Xác minh thành công: Minh chứng hợp lệ và không có dấu hiệu chỉnh sửa.',
-          warning: isFake ? 'Dung lượng ảnh bất thường (có thể là ảnh chụp lại hoặc qua phần mềm chỉnh sửa).' : null
+          message: msg
         });
       }
 
