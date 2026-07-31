@@ -20,7 +20,6 @@ const defaultForm = {
 const STEPS = [
   { num: 1, label: 'Cơ bản' },
   { num: 2, label: 'Chi tiết' },
-  { num: 3, label: 'Thanh toán' },
 ];
 
 export default function CreateMatchPage() {
@@ -32,9 +31,6 @@ export default function CreateMatchPage() {
     play_date:    new Date().toISOString().split('T')[0],
     host_name:    user?.full_name || '',
     host_phone:   user?.phone || '',
-    bank_name:    user?.bank_name || '',
-    bank_account: user?.bank_account || '',
-    bank_owner:   user?.bank_owner || '',
   });
   const [courts, setCourts] = useState([]);
   const [step, setStep] = useState(1);
@@ -49,6 +45,7 @@ export default function CreateMatchPage() {
   const [aiReport, setAiReport] = useState(null);
 
   useEffect(() => {
+    if (!user || user.role !== 'host') {
       navigate('/');
     }
     api.getCourts().then(setCourts).catch(() => {});
@@ -80,7 +77,7 @@ export default function CreateMatchPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (step < 3) {
+    if (step < 2) {
       setStep(s => s + 1);
       return;
     }
@@ -266,57 +263,9 @@ export default function CreateMatchPage() {
                       style={{ marginTop: 8 }}
                     />
                   )}
-
-                  {/* Host Upload Ảnh Minh Chứng Đặt Sân */}
-                  <div style={{ marginTop: 16, padding: 14, background: 'var(--bg-subtle)', border: '1px dashed var(--border-color)', borderRadius: 8 }}>
-                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand)', fontWeight: 700 }}>
-                      <span>Minh chứng đặt sân *</span>
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="form-input"
-                      style={{ marginTop: 6 }}
-                      onChange={e => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          setProofScanning(true);
-                          setProofVerified(false);
-                          setAiReport(null);
-                          reader.onloadend = async () => {
-                            try {
-                              setMsg({ type: 'success', text: 'Đang kiểm tra tính hợp lệ của ảnh minh chứng đặt sân...' });
-                              const res = await api.verifyBill({ image: reader.result, type: 'court_proof' });
-                              setProofScanning(false);
-                              setAiReport(res);
-                              if (res.is_authentic) {
-                                setProofVerified(true);
-                                setMsg({ type: 'success', text: `Xác minh thành công: Minh chứng hợp lệ, kèo đã được cấp tích xanh uy tín.` });
-                              } else {
-                                setProofVerified(false);
-                                setMsg({ type: 'error', text: res.message || 'Ảnh không hợp lệ. Vui lòng tải đúng ảnh đặt sân cầu lông.' });
-                              }
-                            } catch (err) {
-                              setProofScanning(false);
-                              setProofVerified(false);
-                              setMsg({ type: 'error', text: 'Không thể kiểm tra ảnh minh chứng: ' + err.message });
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-
-                    {/* Báo cáo Forensics AI */}
-                    {aiReport && <AIForensicReport report={aiReport} />}
-
-                    {!proofVerified && !proofScanning && (
-                      <div style={{ fontSize: '0.78rem', color: 'var(--danger)', marginTop: 6 }}>
-                        * Vui lòng tải ảnh hóa đơn / bill cọc sân cầu lông hợp lệ để kích hoạt nút Đăng kèo.
-                      </div>
-                    )}
-                  </div>
+                </div>
+              </div>
+            )}
                 </div>
               </div>
             )}
@@ -417,62 +366,6 @@ export default function CreateMatchPage() {
               </div>
             )}
 
-            {/* ─── Step 3 ─── */}
-            {step === 3 && (
-              <div className="create-form-body">
-                <div className="create-payment-info">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                  </svg>
-                  <span>Thêm thông tin ngân hàng để người chơi chuyển cọc khi đăng ký.</span>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">NGÂN HÀNG</label>
-                  <select className="form-select" value={form.bank_name} onChange={e => set('bank_name', e.target.value)}>
-                    <option value="">-- Chọn ngân hàng --</option>
-                    {(BANKS || ['Vietcombank', 'Techcombank', 'MB Bank', 'BIDV', 'Agribank', 'VPBank', 'ACB', 'TPBank']).map(b => {
-                      const bankName = typeof b === 'string' ? b : (b?.name || b?.code || '');
-                      const bankCode = typeof b === 'string' ? b : (b?.code || b?.name || '');
-                      return <option key={bankCode} value={bankCode}>{bankName}</option>;
-                    })}
-                  </select>
-                </div>
-
-                <div className="auth-grid-2">
-                  <div className="form-group">
-                    <label className="form-label">SỐ TÀI KHOẢN</label>
-                    <input className="form-input" placeholder="1234567890"
-                      value={form.bank_account} onChange={e => set('bank_account', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">CHỦ TÀI KHOẢN</label>
-                    <input className="form-input" placeholder="NGUYEN VAN A"
-                      value={form.bank_owner} onChange={e => set('bank_owner', e.target.value)} />
-                  </div>
-                </div>
-
-                {/* Summary */}
-                <div className="create-summary">
-                  <h3 className="create-summary-title">Tóm tắt kèo</h3>
-                  <div className="create-summary-grid">
-                    <span className="create-summary-key">Tiêu đề</span>
-                    <span className="create-summary-val">{form.title || '—'}</span>
-                    <span className="create-summary-key">Địa điểm</span>
-                    <span className="create-summary-val">{form.court_name || '—'}, {form.district}, {form.city}</span>
-                    <span className="create-summary-key">Ngày chơi</span>
-                    <span className="create-summary-val">{form.play_date} • {form.start_time} – {form.end_time}</span>
-                    <span className="create-summary-key">Số suất</span>
-                    <span className="create-summary-val">{form.max_slots} người</span>
-                    <span className="create-summary-key">Giá</span>
-                    <span className="create-summary-val" style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>
-                      {Number(form.cost_per_slot).toLocaleString('vi-VN')}đ / người
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Navigation buttons */}
             <div className="create-nav-btns">
               {step > 1 ? (
@@ -483,13 +376,13 @@ export default function CreateMatchPage() {
                 <Link to="/" className="create-btn-back">← Huỷ</Link>
               )}
 
-              {step < 3 ? (
+              {step < 2 ? (
                 <button type="button" className="create-btn-next" onClick={() => setStep(s => s + 1)}>
                   Tiếp theo →
                 </button>
               ) : (
-                <button type="submit" className="create-btn-submit" disabled={loading || !proofVerified || proofScanning}>
-                  {loading ? 'Đang tạo kèo...' : proofScanning ? 'Đang xác minh AI...' : '🏸 Đăng kèo'}
+                <button type="submit" className="create-btn-submit" disabled={loading}>
+                  {loading ? 'Đang tạo kèo...' : '🏸 Đăng kèo'}
                 </button>
               )}
             </div>

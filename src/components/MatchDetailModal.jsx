@@ -18,9 +18,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
   const [joining, setJoining] = useState(false);
   const [tab, setTab] = useState(initialTab); // info | players | join | qr | copy
   const [form, setForm] = useState({
-    player_name:  user?.full_name  || '',
-    player_phone: user?.phone      || '',
-    skill_level:  user?.skill_level|| '',
+    player_name: user?.full_name || '',
+    player_phone: user?.phone || '',
+    skill_level: user?.skill_level || '',
     note: '',
   });
   const [msg, setMsg] = useState(null);
@@ -69,13 +69,11 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
       await loadDetail();
       const isWait = p.status === 'waitlist';
       if (isWait) {
-        setMsg({ type: 'success', text: `Đã vào danh sách dự bị! Bạn sẽ được thông báo khi có chỗ.` });
-        setTab('players');
+        setMsg({ type: 'success', text: `Đã vào danh sách dự bị! Bạn sẽ được thông báo khi có chỗ trống.` });
       } else {
-        setTimeLeft(600); // 10 mins timer starts now
-        setMsg({ type: 'success', text: `Đăng ký thành công! Bạn có 10 phút để chuyển khoản cọc và gửi ảnh xác nhận.` });
-        setTab('qr');
+        setMsg({ type: 'success', text: `Đăng ký tham gia thành công! Vui lòng có mặt đúng giờ.` });
       }
+      setTab('players');
       setForm({ player_name: user?.full_name || '', player_phone: user?.phone || '', skill_level: user?.skill_level || '', note: '' });
     } catch (err) {
       setMsg({ type: 'error', text: err.message });
@@ -167,9 +165,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
         {/* Tab switcher */}
         <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
           {[
-            { id: 'info',    label: 'THÔNG TIN KÈO' },
+            { id: 'info', label: 'THÔNG TIN KÈO' },
             { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots})` },
-            { id: 'copy',    label: 'COPY BÀI ZALO' },
+            { id: 'copy', label: 'COPY BÀI ZALO' },
           ].map(t => (
             <button
               key={t.id}
@@ -290,11 +288,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <span style={{
                             padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700,
-                            background: p.deposit_status === 'paid' ? '#F0FDF4' : '#FEF2F2',
-                            color: p.deposit_status === 'paid' ? '#15803D' : '#B91C1C',
-                            border: `1px solid ${p.deposit_status === 'paid' ? '#BBF7D0' : '#FECACA'}`
+                            background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0'
                           }}>
-                            {p.deposit_status === 'paid' ? 'ĐÃ CỌC' : 'CHỜ CỌC'}
+                            XÁC NHẬN
                           </span>
                           {isHost && (
                             <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
@@ -355,22 +351,22 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
 
                     <div className="form-group">
                       <label className="form-label">Tên hiển thị</label>
-                      <input className="form-input" required value={form.player_name} onChange={e => setForm({...form, player_name: e.target.value})} />
+                      <input className="form-input" required value={form.player_name} onChange={e => setForm({ ...form, player_name: e.target.value })} />
                     </div>
                     <div className="form-group">
                       <label className="form-label">Số điện thoại / Zalo</label>
-                      <input className="form-input" value={form.player_phone} onChange={e => setForm({...form, player_phone: e.target.value})} placeholder="0912 345 678" />
+                      <input className="form-input" value={form.player_phone} onChange={e => setForm({ ...form, player_phone: e.target.value })} placeholder="0912 345 678" />
                     </div>
                     <div className="form-group">
                       <label className="form-label">Trình độ của bạn</label>
-                      <select className="form-select" value={form.skill_level} onChange={e => setForm({...form, skill_level: e.target.value})}>
+                      <select className="form-select" value={form.skill_level} onChange={e => setForm({ ...form, skill_level: e.target.value })}>
                         <option value="">-- Chọn trình độ --</option>
                         {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div className="form-group">
                       <label className="form-label">Ghi chú thêm</label>
-                      <textarea className="form-textarea" rows={2} value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="Đến muộn 5p, xin đánh đôi nam nữ..." />
+                      <textarea className="form-textarea" rows={2} value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} placeholder="Đến muộn 5p, xin đánh đôi nam nữ..." />
                     </div>
 
                     <button type="submit" className="btn btn-primary btn-lg" style={{ justifyContent: 'center' }} disabled={joining}>
@@ -380,118 +376,7 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                 )
               )}
 
-              {/* TAB 4: QR PAYMENT */}
-              {tab === 'qr' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-                  {/* Countdown Timer */}
-                  <div style={{
-                    width: '100%', padding: '12px 16px', background: '#FFFBEB', border: '1px solid #FDE68A',
-                    borderRadius: 'var(--r-sm)', textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.78rem', color: '#B45309', fontWeight: 600, textTransform: 'uppercase' }}>
-                      Thời gian giữ chỗ thanh toán
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#D97706', fontFamily: 'monospace' }}>
-                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#B45309', marginTop: 2 }}>
-                      Vui lòng chuyển khoản và tải ảnh xác nhận trước khi hết giờ.
-                    </div>
-                  </div>
 
-                  {/* Bank Details from Match / Host */}
-                  <div style={{ width: '100%', background: 'var(--bg-subtle)', padding: 14, border: '1px solid var(--border-color)', borderRadius: 'var(--r-sm)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', marginBottom: 8, textTransform: 'uppercase' }}>
-                      THÔNG TIN CHUYỂN KHOẢN CỦA HOST
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: '0.85rem' }}>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Ngân hàng:</span> <strong>{match.bank_name || 'Chưa thiết lập'}</strong></div>
-                      <div>
-                        <span style={{ color: 'var(--text-muted)' }}>Số tài khoản:</span>{' '}
-                        <strong style={{ color: 'var(--brand)' }}>{match.bank_account || 'Chưa thiết lập'}</strong>
-                        {match.bank_account && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              navigator.clipboard.writeText(match.bank_account);
-                              setMsg({ type: 'success', text: `Đã sao chép STK ${match.bank_account} vào bộ nhớ tạm!` });
-                            }}
-                            style={{
-                              marginLeft: 6, padding: '2px 6px', fontSize: '0.7rem', fontWeight: 600,
-                              background: 'var(--brand-light)', color: 'var(--brand)', border: '1px solid var(--brand-border)',
-                              borderRadius: 4, cursor: 'pointer'
-                            }}
-                          >
-                            Copy STK
-                          </button>
-                        )}
-                      </div>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Chủ tài khoản:</span> <strong>{match.bank_owner || match.host_name}</strong></div>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Số tiền cọc:</span> <strong style={{ color: 'var(--danger)' }}>{fmtCurrency(match.cost_per_slot)}</strong></div>
-                    </div>
-                  </div>
-
-                  {/* VietQR Code */}
-                  {qrUrl && (
-                    <div style={{ border: '1px solid var(--border-color)', padding: 10, background: '#FFFFFF', borderRadius: 'var(--r-sm)' }}>
-                      <img src={qrUrl} alt="VietQR Code" style={{ width: 180, height: 180, display: 'block' }} />
-                    </div>
-                  )}
-
-                  {/* Upload proof of payment */}
-                  <div style={{ width: '100%', textAlign: 'left' }}>
-                    <label className="form-label">XÁC NHẬN CHUYỂN KHOẢN (GỬI ẢNH ĐÃ THANH TOÁN)</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="form-input"
-                      onChange={e => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = async () => {
-                            const base64 = reader.result;
-                            setProofImage(base64);
-                            setAiReport(null);
-                            // Gọi AI Scanner quét tự động
-                            try {
-                              setMsg({ type: 'success', text: 'Đang tự động kiểm tra tính hợp lệ của hình ảnh...' });
-                              const res = await api.verifyBill({ image: base64, expected_amount: match.cost_per_slot, type: 'deposit' });
-                              setAiReport(res);
-                              if (res.is_authentic) {
-                                setMsg({ type: 'success', text: `Xác minh thành công: ${res.message}` });
-                              } else {
-                                setMsg({ type: 'error', text: `Cảnh báo: ${res.message} ${res.warning || ''}` });
-                              }
-                            } catch (err) {
-                              setMsg({ type: 'error', text: 'Không thể kiểm tra hình ảnh: ' + err.message });
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                    {proofImage && (
-                      <div style={{ marginTop: 10, textAlign: 'center' }}>
-                        <img src={proofImage} alt="Xác nhận cọc" style={{ maxHeight: 150, borderRadius: 6, border: '1px solid var(--border-color)' }} />
-                      </div>
-                    )}
-
-                    {/* Báo cáo Forensic AI */}
-                    {aiReport && <AIForensicReport report={aiReport} />}
-                    <button
-                      className="btn btn-primary"
-                      style={{ width: '100%', marginTop: 12, justifyContent: 'center', gap: 8 }}
-                      onClick={() => {
-                        setMsg({ type: 'success', text: 'Đã gửi ảnh xác nhận cọc tiền thành công. Trạng thái giữ chỗ hiện tại là PENDING.' });
-                        setTab('players');
-                      }}
-                    >
-                      XÁC NHẬN ĐÃ THANH TOÁN
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {/* TAB 5: COPY ZALO */}
               {tab === 'copy' && (
