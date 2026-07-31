@@ -43,9 +43,10 @@ export default function CreateMatchPage() {
   // Court search state
   const [courtSearch, setCourtSearch] = useState('');
   const [courtDropOpen, setCourtDropOpen] = useState(false);
+  const [proofVerified, setProofVerified] = useState(false);
+  const [proofScanning, setProofScanning] = useState(false);
 
   useEffect(() => {
-    if (!user || user.role !== 'host') {
       navigate('/');
     }
     api.getCourts().then(setCourts).catch(() => {});
@@ -267,7 +268,7 @@ export default function CreateMatchPage() {
                   {/* Host Upload Ảnh Minh Chứng Đặt Sân */}
                   <div style={{ marginTop: 16, padding: 14, background: 'var(--bg-subtle)', border: '1px dashed var(--border-color)', borderRadius: 8 }}>
                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand)', fontWeight: 700 }}>
-                      <span>Minh chứng đặt sân</span>
+                      <span>Minh chứng đặt sân *</span>
                     </label>
                     <input
                       type="file"
@@ -278,16 +279,23 @@ export default function CreateMatchPage() {
                         const file = e.target.files[0];
                         if (file) {
                           const reader = new FileReader();
+                          setProofScanning(true);
+                          setProofVerified(false);
                           reader.onloadend = async () => {
                             try {
-                              setMsg({ type: 'success', text: 'Đang kiểm tra minh chứng đặt sân...' });
+                              setMsg({ type: 'success', text: 'Đang kiểm tra tính hợp lệ của ảnh minh chứng đặt sân...' });
                               const res = await api.verifyBill({ image: reader.result, type: 'court_proof' });
+                              setProofScanning(false);
                               if (res.is_authentic) {
-                                setMsg({ type: 'success', text: `Xác minh thành công: Minh chứng hợp lệ, kèo đã được duyệt uy tín.` });
+                                setProofVerified(true);
+                                setMsg({ type: 'success', text: `Xác minh thành công: Minh chứng hợp lệ, kèo đã được cấp tích xanh uy tín.` });
                               } else {
-                                setMsg({ type: 'error', text: `Cảnh báo: ${res.message}` });
+                                setProofVerified(false);
+                                setMsg({ type: 'error', text: res.message || 'Ảnh không hợp lệ. Vui lòng tải đúng ảnh đặt sân cầu lông.' });
                               }
                             } catch (err) {
+                              setProofScanning(false);
+                              setProofVerified(false);
                               setMsg({ type: 'error', text: 'Không thể kiểm tra ảnh minh chứng: ' + err.message });
                             }
                           };
@@ -295,6 +303,11 @@ export default function CreateMatchPage() {
                         }
                       }}
                     />
+                    {!proofVerified && (
+                      <div style={{ fontSize: '0.78rem', color: 'var(--danger)', marginTop: 6 }}>
+                        * Vui lòng tải ảnh hóa đơn / bill cọc sân cầu lông hợp lệ để kích hoạt nút Đăng kèo.
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -467,8 +480,8 @@ export default function CreateMatchPage() {
                   Tiếp theo →
                 </button>
               ) : (
-                <button type="submit" className="create-btn-submit" disabled={loading}>
-                  {loading ? 'Đang tạo kèo...' : '🏸 Đăng kèo'}
+                <button type="submit" className="create-btn-submit" disabled={loading || !proofVerified || proofScanning}>
+                  {loading ? 'Đang tạo kèo...' : proofScanning ? 'Đang xác minh AI...' : '🏸 Đăng kèo'}
                 </button>
               )}
             </div>

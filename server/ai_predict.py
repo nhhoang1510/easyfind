@@ -111,24 +111,34 @@ def predict_bill(image_base64, model_path, expected_amount=None):
             is_fake = fake_prob > real_prob
             confidence = max(fake_prob, real_prob)
             
-        # OCR Check (Lớp 2: Kiểm tra số tiền)
+        # OCR Check (Lớp 2: Kiểm tra số tiền & Từ khóa cầu lông)
         ocr_text = extract_text_and_amounts(raw_img)
+        ocr_text_lower = ocr_text.lower() if ocr_text else ""
         detected_amounts = parse_currency_amounts(ocr_text)
         amount_matched = True
         amount_warning = None
 
+        # Từ khóa liên quan đến cầu lông / chuyển khoản / đặt sân
+        badminton_keywords = ['cầu lông', 'cau long', 'badminton', 'sân', 'san', 'đặt sân', 'dat san', 'chuyển khoản', 'chuyen khoan', 'vcb', 'mb', 'bidv', 'techcombank', 'vietinbank', 'acb', 'tpbank', 'giao dịch', 'giao dich', 'bill', 'thanh toán', 'thanh toan']
+        is_badminton_related = True
+        
+        if ocr_text_lower:
+            is_badminton_related = any(kw in ocr_text_lower for kw in badminton_keywords)
+
         if expected_amount and expected_amount > 0 and detected_amounts:
-            # Kiểm tra xem có số tiền nào khớp hoặc lớn hơn tiền cọc không
             has_valid_amount = any(amt >= expected_amount for amt in detected_amounts)
             if not has_valid_amount:
                 amount_matched = False
-                amount_warning = f"Số tiền phát hiện trên bill ({detected_amounts[0]:,}đ) nhỏ hơn mức cọc yêu cầu ({expected_amount:,}đ)."
+                amount_warning = f"Số tiền trên minh chứng ({detected_amounts[0]:,}đ) nhỏ hơn mức cọc yêu cầu ({expected_amount:,}đ)."
 
-        # Phân loại lý do cảnh báo cụ thể
+        # Phân loại 4 nhóm lý do cảnh báo cụ thể
         warning_type = None
         status_msg = "Xác minh thành công: Minh chứng hợp lệ."
 
-        if is_fake:
+        if not is_badminton_related:
+            warning_type = "NOT_BADMINTON_RELATED"
+            status_msg = "Cảnh báo: Ảnh minh chứng không chứa thông tin liên quan đến sân cầu lông hoặc bill chuyển khoản."
+        elif is_fake:
             warning_type = "IMAGE_EDITED"
             status_msg = "Cảnh báo: Ảnh có dấu hiệu bị cắt ghép hoặc chỉnh sửa qua phần mềm."
         elif not amount_matched and amount_warning:
@@ -140,13 +150,14 @@ def predict_bill(image_base64, model_path, expected_amount=None):
 
         return {
             "success": True,
-            "is_authentic": not is_fake and amount_matched and confidence >= 0.70,
+            "is_authentic": is_badminton_related and not is_fake and amount_matched and confidence >= 0.70,
             "warning_type": warning_type,
             "confidence_score": round(confidence * 100, 1),
             "fake_probability": round(fake_prob * 100, 1),
             "real_probability": round(real_prob * 100, 1),
             "detected_amounts": detected_amounts,
             "amount_matched": amount_matched,
+            "is_badminton_related": is_badminton_related,
             "message": status_msg
         }
             
