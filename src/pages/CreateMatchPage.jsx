@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES, HN_DISTRICTS, HCM_DISTRICTS, DN_DISTRICTS, SHUTTLECOCKS, BANKS } from '../utils/helpers';
 import LogoIcon from '../components/LogoIcon';
+import AIForensicReport from '../components/AIForensicReport';
 
 const districtMap = { 'Hà Nội': HN_DISTRICTS, 'TP.HCM': HCM_DISTRICTS, 'Đà Nẵng': DN_DISTRICTS };
 
@@ -45,6 +46,7 @@ export default function CreateMatchPage() {
   const [courtDropOpen, setCourtDropOpen] = useState(false);
   const [proofVerified, setProofVerified] = useState(false);
   const [proofScanning, setProofScanning] = useState(false);
+  const [aiReport, setAiReport] = useState(null);
 
   useEffect(() => {
       navigate('/');
@@ -281,11 +283,13 @@ export default function CreateMatchPage() {
                           const reader = new FileReader();
                           setProofScanning(true);
                           setProofVerified(false);
+                          setAiReport(null);
                           reader.onloadend = async () => {
                             try {
                               setMsg({ type: 'success', text: 'Đang kiểm tra tính hợp lệ của ảnh minh chứng đặt sân...' });
                               const res = await api.verifyBill({ image: reader.result, type: 'court_proof' });
                               setProofScanning(false);
+                              setAiReport(res);
                               if (res.is_authentic) {
                                 setProofVerified(true);
                                 setMsg({ type: 'success', text: `Xác minh thành công: Minh chứng hợp lệ, kèo đã được cấp tích xanh uy tín.` });
@@ -303,7 +307,11 @@ export default function CreateMatchPage() {
                         }
                       }}
                     />
-                    {!proofVerified && (
+
+                    {/* Báo cáo Forensics AI */}
+                    {aiReport && <AIForensicReport report={aiReport} />}
+
+                    {!proofVerified && !proofScanning && (
                       <div style={{ fontSize: '0.78rem', color: 'var(--danger)', marginTop: 6 }}>
                         * Vui lòng tải ảnh hóa đơn / bill cọc sân cầu lông hợp lệ để kích hoạt nút Đăng kèo.
                       </div>

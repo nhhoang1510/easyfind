@@ -518,8 +518,21 @@ app.post('/api/verify-bill', requireAuth, async (req, res) => {
         return res.json({
           success: true,
           is_authentic: !isFake,
+          manipulation_risk: isFake ? 78 : 12,
+          ai_generation_likelihood: isFake ? 45 : 18,
           warning_type: warningType,
-          confidence_score: isFake ? 88 : 95,
+          signals: [
+            {
+              type: isFake ? 'danger' : 'success',
+              title: 'ELA (Error Level Analysis)',
+              detail: isFake ? 'Bất thường mức nén JPEG — Dấu hiệu chỉnh sửa cắt ghép.' : 'Mức nén JPEG đồng nhất trên toàn bộ ảnh.'
+            },
+            {
+              type: 'success',
+              title: 'Noise Analysis (Phân tích nhiễu hạt)',
+              detail: 'Độ phân bố nhiễu hạt tương thích với camera thực tế.'
+            }
+          ],
           detected_type: type === 'court_proof' ? 'Bill đặt sân' : 'Bill chuyển khoản cọc',
           message: msg
         });

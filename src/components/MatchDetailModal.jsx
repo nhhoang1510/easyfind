@@ -7,6 +7,7 @@ import {
 } from '../utils/helpers';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import AIForensicReport from './AIForensicReport';
 
 export default function MatchDetailModal({ match: initMatch, initialTab = 'info', onClose, onUpdate, onShowAuth }) {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
   const [msg, setMsg] = useState(null);
   const [copyDone, setCopyDone] = useState(false);
   const [proofImage, setProofImage] = useState(null);
+  const [aiReport, setAiReport] = useState(null);
   const [currentParticipant, setCurrentParticipant] = useState(null);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes (600 seconds) countdown
 
@@ -450,10 +452,12 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                           reader.onloadend = async () => {
                             const base64 = reader.result;
                             setProofImage(base64);
+                            setAiReport(null);
                             // Gọi AI Scanner quét tự động
                             try {
                               setMsg({ type: 'success', text: 'Đang tự động kiểm tra tính hợp lệ của hình ảnh...' });
                               const res = await api.verifyBill({ image: base64, expected_amount: match.cost_per_slot, type: 'deposit' });
+                              setAiReport(res);
                               if (res.is_authentic) {
                                 setMsg({ type: 'success', text: `Xác minh thành công: ${res.message}` });
                               } else {
@@ -472,6 +476,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                         <img src={proofImage} alt="Xác nhận cọc" style={{ maxHeight: 150, borderRadius: 6, border: '1px solid var(--border-color)' }} />
                       </div>
                     )}
+
+                    {/* Báo cáo Forensic AI */}
+                    {aiReport && <AIForensicReport report={aiReport} />}
                     <button
                       className="btn btn-primary"
                       style={{ width: '100%', marginTop: 12, justifyContent: 'center', gap: 8 }}
