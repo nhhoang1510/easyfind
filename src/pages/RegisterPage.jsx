@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES } from '../utils/helpers';
+import LogoIcon from '../components/LogoIcon';
 
 // IMPORT FIREBASE AUTH
 import { auth } from '../api/firebase';
@@ -202,12 +203,16 @@ export default function RegisterPage() {
           borderBottom: isMobile ? '1px solid #dadce0' : 'none',
         }}>
           <div>
+            {/* Brand lockup: icon + wordmark */}
             <div style={{
-              width: 40, height: 40, borderRadius: 10, marginBottom: isMobile ? 12 : 28,
-              background: 'linear-gradient(135deg, #1a73e8 0%, #4285f4 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: '1.1rem', fontWeight: 700,
-            }}>E</div>
+              display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28,
+            }}>
+              <LogoIcon size={36} />
+              <span style={{
+                fontSize: '1.15rem', fontWeight: 800,
+                color: '#111827', letterSpacing: '-0.5px',
+              }}>EasyFind</span>
+            </div>
 
             <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 600, color: '#202124', lineHeight: 1.25, marginBottom: 10 }}>
               {currentStepInfo.title}

@@ -447,7 +447,22 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                         const file = e.target.files[0];
                         if (file) {
                           const reader = new FileReader();
-                          reader.onloadend = () => setProofImage(reader.result);
+                          reader.onloadend = async () => {
+                            const base64 = reader.result;
+                            setProofImage(base64);
+                            // Gọi AI Scanner quét tự động
+                            try {
+                              setMsg({ type: 'success', text: 'Đang tự động kiểm tra tính hợp lệ của hình ảnh...' });
+                              const res = await api.verifyBill({ image: base64, expected_amount: match.cost_per_slot, type: 'deposit' });
+                              if (res.is_authentic) {
+                                setMsg({ type: 'success', text: `Đã xác minh (${res.confidence_score}% độ tin cậy): ${res.message}` });
+                              } else {
+                                setMsg({ type: 'error', text: `Cảnh báo (${res.confidence_score}% độ tin cậy): ${res.message} ${res.warning || ''}` });
+                              }
+                            } catch (err) {
+                              setMsg({ type: 'error', text: 'Không thể kiểm tra hình ảnh: ' + err.message });
+                            }
+                          };
                           reader.readAsDataURL(file);
                         }
                       }}
@@ -459,13 +474,13 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                     )}
                     <button
                       className="btn btn-primary"
-                      style={{ width: '100%', marginTop: 12, justifyContent: 'center' }}
+                      style={{ width: '100%', marginTop: 12, justifyContent: 'center', gap: 8 }}
                       onClick={() => {
-                        setMsg({ type: 'success', text: 'Đã gửi ảnh xác nhận cọc! Trạng thái giữ chỗ hiện tại là PENDING (Chờ Host xác nhận).' });
+                        setMsg({ type: 'success', text: 'Đã gửi ảnh xác nhận cọc kèm chứng chỉ xác minh AI! Trạng thái giữ chỗ hiện tại là PENDING.' });
                         setTab('players');
                       }}
                     >
-                      XÁC NHẬN ĐÃ THANH TOÁN (PENDING)
+                      🛡️ XÁC NHẬN ĐÃ THANH TOÁN (KÈM XÁC MINH AI)
                     </button>
                   </div>
                 </div>

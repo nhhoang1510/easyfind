@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES, HN_DISTRICTS, HCM_DISTRICTS, DN_DISTRICTS, SHUTTLECOCKS, BANKS } from '../utils/helpers';
+import LogoIcon from '../components/LogoIcon';
 
 const districtMap = { 'Hà Nội': HN_DISTRICTS, 'TP.HCM': HCM_DISTRICTS, 'Đà Nẵng': DN_DISTRICTS };
 
@@ -105,8 +106,9 @@ export default function CreateMatchPage() {
     <div className="create-page">
       {/* Top bar */}
       <div className="create-page-topbar">
-        <Link to="/" className="create-page-logo" style={{ textDecoration: 'none' }}>
-          EasyFind
+        <Link to="/" className="create-page-logo" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+          <LogoIcon size={28} />
+          <span>EasyFind</span>
         </Link>
       </div>
 
@@ -261,6 +263,39 @@ export default function CreateMatchPage() {
                       style={{ marginTop: 8 }}
                     />
                   )}
+
+                  {/* Host Upload Ảnh Minh Chứng Đặt Sân (Quét AI) */}
+                  <div style={{ marginTop: 16, padding: 14, background: 'var(--bg-subtle)', border: '1px dashed var(--border-color)', borderRadius: 8 }}>
+                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand)', fontWeight: 700 }}>
+                      <span>Minh chứng đặt sân (Hệ thống tự động xác minh uy tín Host)</span>
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="form-input"
+                      style={{ marginTop: 6 }}
+                      onChange={e => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = async () => {
+                            try {
+                              setMsg({ type: 'success', text: 'Đang kiểm tra minh chứng đặt sân...' });
+                              const res = await api.verifyBill({ image: reader.result, type: 'court_proof' });
+                              if (res.is_authentic) {
+                                setMsg({ type: 'success', text: `Xác minh thành công (${res.confidence_score}%): Minh chứng hợp lệ. Kèo của bạn đã được duyệt tích xanh uy tín.` });
+                              } else {
+                                setMsg({ type: 'error', text: `Cảnh báo (${res.confidence_score}%): ${res.message}` });
+                              }
+                            } catch (err) {
+                              setMsg({ type: 'error', text: 'Không thể kiểm tra ảnh minh chứng: ' + err.message });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             )}

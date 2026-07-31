@@ -38,8 +38,9 @@ export const api = {
   // Courts
   getCourts:         ()            => apiFetch('/courts'),
 
-  // Participants
+  // Participants & AI Verification
   joinMatch:         (id, data)    => apiFetch(`/matches/${id}/join`,     { method: 'POST',  body: JSON.stringify(data) }),
   cancelParticipant: (pid)         => apiFetch(`/participants/${pid}/cancel`, { method: 'POST' }),
   updateDeposit:     (pid, status) => apiFetch(`/participants/${pid}/deposit`, { method: 'PATCH', body: JSON.stringify({ deposit_status: status }) }),
+  verifyBill:        (data)        => apiFetch('/verify-bill',    { method: 'POST',  body: JSON.stringify(data) }),
 };

@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserMenu from './UserMenu';
+import LogoIcon from './LogoIcon';
 
 export default function Navbar() {
   const { user, loading } = useAuth();
@@ -10,7 +11,8 @@ export default function Navbar() {
     <header className="topbar">
       <div className="topbar-inner">
         {/* Logo */}
-        <Link to="/" className="topbar-logo" id="logo-home">
+        <Link to="/" className="topbar-logo" id="logo-home" style={{ gap: 10 }}>
+          <LogoIcon size={30} />
           <span className="topbar-logo-name">EasyFind</span>
         </Link>
 

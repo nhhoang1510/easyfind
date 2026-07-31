@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LogoIcon from '../components/LogoIcon';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -27,7 +28,10 @@ export default function LoginPage() {
     <div className="lp-page">
       <div className="lp-card">
         {/* Brand */}
-        <Link to="/" className="lp-brand">EasyFind</Link>
+        <Link to="/" className="lp-brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <LogoIcon size={32} />
+          <span>EasyFind</span>
+        </Link>
 
         <div className="lp-header">
           <h1 className="lp-title">Đăng nhập</h1>
