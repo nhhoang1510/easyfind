@@ -489,8 +489,9 @@ app.post('/api/verify-bill', requireAuth, async (req, res) => {
     // Lưu ảnh tạm để truyền sang Python
     fs.writeFileSync(tempB64File, image);
 
-    // Chạy PyTorch model inference
-    exec(`python "${scriptPath}" "${tempB64File}" "${modelPath}"`, (error, stdout, stderr) => {
+    // Chạy PyTorch model inference & OCR Check
+    const amtArg = expected_amount ? parseInt(expected_amount) : 0;
+    exec(`python "${scriptPath}" "${tempB64File}" "${modelPath}" "${amtArg}"`, (error, stdout, stderr) => {
       // Dọn dẹp file tạm
       if (fs.existsSync(tempB64File)) fs.unlinkSync(tempB64File);
 
