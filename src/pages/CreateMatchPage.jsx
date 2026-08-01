@@ -266,9 +266,6 @@ export default function CreateMatchPage() {
                 </div>
               </div>
             )}
-                </div>
-              </div>
-            )}
 
             {/* ─── Step 2 ─── */}
             {step === 2 && (
