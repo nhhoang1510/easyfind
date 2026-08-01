@@ -214,35 +214,35 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
               {tab === 'info' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {/* Grid details */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, background: '#F8FAFC', padding: 16, border: '1px solid #E2E8F0' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, background: '#F8FAFC', padding: 18, border: '1px solid #E2E8F0', borderRadius: 8 }}>
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Host tổ chức</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0F172A', marginTop: 2 }}>{match.host_name}</div>
-                      {match.host_phone && <div style={{ fontSize: '0.78rem', color: '#475569' }}>SĐT: {fmtPhone(match.host_phone)}</div>}
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Host tổ chức</div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>{match.host_name}</div>
+                      {match.host_phone && <div style={{ fontSize: '0.84rem', color: '#475569', marginTop: 1 }}>SĐT: {fmtPhone(match.host_phone)}</div>}
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Tên sân</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0F172A', marginTop: 2 }}>{match.court_name}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Tên sân</div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>{match.court_name}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Ngày & Thời gian</div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0F172A', marginTop: 2 }}>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Ngày & Thời gian</div>
+                      <div style={{ fontSize: '1.02rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>
                         {fmtDate(match.play_date)} ({fmtTime(match.start_time)} – {fmtTime(match.end_time)})
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Chi phí / Suất</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#E11D48', marginTop: 2 }}>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Chi phí / Suất</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#E11D48', marginTop: 3 }}>
                         {fmtCurrency(match.cost_per_slot)}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Trình độ yêu cầu</div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0F172A', marginTop: 2 }}>{match.skill_level}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Trình độ yêu cầu</div>
+                      <div style={{ fontSize: '1.02rem', fontWeight: 600, color: '#0F172A', marginTop: 3 }}>{match.skill_level}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Loại cầu sử dụng</div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0F172A', marginTop: 2 }}>{match.shuttlecock || 'Ba Sao'}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Loại cầu sử dụng</div>
+                      <div style={{ fontSize: '1.02rem', fontWeight: 600, color: '#0F172A', marginTop: 3 }}>{match.shuttlecock || 'Ba Sao'}</div>
                     </div>
                   </div>
 
