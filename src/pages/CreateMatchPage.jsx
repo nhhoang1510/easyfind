@@ -382,7 +382,7 @@ export default function CreateMatchPage() {
                 </button>
               ) : (
                 <button type="submit" className="create-btn-submit" disabled={loading}>
-                  {loading ? 'Đang tạo kèo...' : '🏸 Đăng kèo'}
+                  {loading ? 'Đang tạo kèo...' : 'Đăng kèo'}
                 </button>
               )}
             </div>

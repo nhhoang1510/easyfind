@@ -84,11 +84,19 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
           <span className="mc-tag" style={{ background: skillStyle.bg, color: skillStyle.text, border: `1px solid ${skillStyle.text}22` }}>
             {match.skill_level}
           </span>
-          <span className="mc-tag">
-            {GENDER_LABEL[match.gender_required] || match.gender_required}
-          </span>
-          <span className="mc-tag">
-            🏸 {match.shuttlecock || 'Ba Sao'}
+          {match.gender_required && (
+            <span className="mc-tag">
+              {GENDER_LABEL[match.gender_required] || match.gender_required}
+            </span>
+          )}
+          <span className="mc-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <ellipse cx="12" cy="7" rx="5" ry="2" />
+              <line x1="7" y1="7" x2="12" y2="19" />
+              <line x1="17" y1="7" x2="12" y2="19" />
+              <circle cx="12" cy="19" r="1.5" fill="currentColor" />
+            </svg>
+            {match.shuttlecock || 'Ba Sao'}
           </span>
         </div>
       </div>
