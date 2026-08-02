@@ -118,27 +118,7 @@ export default function CreateMatchPage() {
         {/* Header */}
         <div className="create-page-header">
           <h1 className="create-page-title">Tạo Kèo Mới</h1>
-          <p className="create-page-sub">Chỉ mất 2 phút để tạo kèo và chia sẻ với anh em!</p>
-
-          {/* Step indicator */}
-          <div className="create-steps">
-            {STEPS.map((s, i) => (
-              <div key={s.num} className="create-steps-item">
-                <div
-                  className={`create-steps-circle ${step === s.num ? 'create-steps-circle--active' : step > s.num ? 'create-steps-circle--done' : ''}`}
-                  onClick={() => step > s.num && setStep(s.num)}
-                >
-                  {step > s.num ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  ) : s.num}
-                </div>
-                <span className={`create-steps-label ${step === s.num ? 'create-steps-label--active' : ''}`}>{s.label}</span>
-                {i < STEPS.length - 1 && <div className={`create-steps-line ${step > s.num ? 'create-steps-line--done' : ''}`} />}
-              </div>
-            ))}
-          </div>
+          <p className="create-page-sub">Nhập thông tin sân, giờ đánh và số suất để tuyển quân ngay!</p>
         </div>
 
         {/* Card */}
@@ -150,78 +130,32 @@ export default function CreateMatchPage() {
           )}
 
           <form onSubmit={handleSubmit}>
-            {/* ─── Step 1 ─── */}
-            {step === 1 && (
-              <div className="create-form-body">
-                {/* ── Court search ── */}
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <label className="form-label">TÊN SÂN HOẶC ĐỊA CHỈ *</label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Gõ tên sân hoặc đường/phường/quận để tìm..."
-                      value={courtSearch || form.court_name}
-                      onChange={e => handleCourtSearchChange(e.target.value)}
-                      onFocus={() => setCourtDropOpen(true)}
-                      onBlur={() => {
-                        setTimeout(() => {
-                          setCourtDropOpen(false);
-                          if (courtSearch) set('court_name', courtSearch);
-                        }, 150);
-                      }}
-                    />
-                    {(courtSearch || form.court_name) && (
-                      <button type="button" onClick={handleCourtClear}
-                        style={{
-                          position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                          background: 'none', border: 'none', cursor: 'pointer',
-                          color: 'var(--text-muted)', fontSize: '0.9rem'
-                        }}>✕</button>
-                    )}
-                  </div>
-
-                  {/* Dropdown gợi ý (Tìm theo tên sân HOẶC địa chỉ/quận) */}
-                  {courtDropOpen && (() => {
-                    const term = (courtSearch || '').toLowerCase().trim();
-                    const filtered = courts.filter(c =>
-                      !term ||
-                      c.name.toLowerCase().includes(term) ||
-                      (c.address && c.address.toLowerCase().includes(term)) ||
-                      (c.district && c.district.toLowerCase().includes(term))
-                    );
-                    if (filtered.length === 0) return null;
-                    return (
-                      <div style={{
-                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
-                        background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-md)',
-                        maxHeight: 220, overflowY: 'auto', marginTop: 4,
-                      }}>
-                        {filtered.map(c => (
-                          <div key={c.id} onClick={() => handleCourtSelect(c)}
-                            onMouseDown={e => e.preventDefault()}
-                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '0.85rem', borderBottom: '1px solid var(--border-color)' }}>
-                            <div style={{ fontWeight: 600 }}>{c.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                              📍 {c.address || [c.district, c.city].filter(Boolean).join(', ')}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Sân không có trong DB: hiện input địa chỉ tự nhập */}
-                  {!form.court_id && form.court_name && (
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Địa chỉ sân (tùy chọn)"
-                      value={form.court_address || ''}
-                      onChange={e => set('court_address', e.target.value)}
-                      style={{ marginTop: 8 }}
-                    />
+            <div className="create-form-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* ── 1. Tên Sân ── */}
+              <div className="form-group" style={{ position: 'relative' }}>
+                <label className="form-label">TÊN SÂN HOẶC ĐỊA CHỈ *</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Gõ tên sân hoặc đường/quận..."
+                    value={courtSearch || form.court_name}
+                    onChange={e => handleCourtSearchChange(e.target.value)}
+                    onFocus={() => setCourtDropOpen(true)}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setCourtDropOpen(false);
+                        if (courtSearch) set('court_name', courtSearch);
+                      }, 150);
+                    }}
+                  />
+                  {(courtSearch || form.court_name) && (
+                    <button type="button" onClick={handleCourtClear}
+                      style={{
+                        position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'var(--text-muted)', fontSize: '0.9rem'
+                      }}>✕</button>
                   )}
                 </div>
 
@@ -237,12 +171,7 @@ export default function CreateMatchPage() {
                       value={form.host_phone} onChange={e => set('host_phone', e.target.value)} />
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* ─── Step 2 ─── */}
-            {step === 2 && (
-              <div className="create-form-body">
                 <div className="form-group">
                   <label className="form-label">NGÀY CHƠI *</label>
                   <input type="date" className="form-input" required min={new Date().toISOString().split('T')[0]}
@@ -639,31 +568,18 @@ export default function CreateMatchPage() {
 
                 <div className="form-group">
                   <label className="form-label">GHI CHÚ THÊM</label>
-                  <textarea className="form-input" rows={3} placeholder="Thông tin thêm về kèo, yêu cầu đặc biệt..."
+                  <textarea className="form-input" rows={2} placeholder="Thông tin thêm về kèo, yêu cầu đặc biệt..."
                     value={form.note} onChange={e => set('note', e.target.value)} style={{ resize: 'vertical' }} />
                 </div>
               </div>
-            )}
 
-            {/* Navigation buttons */}
-            <div className="create-nav-btns">
-              {step > 1 ? (
-                <button type="button" className="create-btn-back" onClick={() => setStep(s => s - 1)}>
-                  Quay lại
-                </button>
-              ) : (
-                <Link to="/" className="create-btn-back">Huỷ</Link>
-              )}
-
-              {step < 2 ? (
-                <button type="button" className="create-btn-next" onClick={() => setStep(s => s + 1)}>
-                  Tiếp theo
-                </button>
-              ) : (
-                <button type="submit" className="create-btn-submit" disabled={loading}>
+              {/* Submit button */}
+              <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
+                <Link to="/" className="create-btn-back" style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}>Huỷ</Link>
+                <button type="submit" className="create-btn-submit" style={{ flex: 2 }} disabled={loading}>
                   {loading ? 'Đang tạo kèo...' : 'Đăng kèo'}
                 </button>
-              )}
+              </div>
             </div>
           </form>
         </div>
