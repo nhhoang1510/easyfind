@@ -386,19 +386,18 @@ export default function CreateMatchPage() {
 
                 {/* ── Suất & Giá Tiền ── */}
                 <div className="form-group" style={{ background: 'var(--bg-subtle)', padding: 14, borderRadius: 10, border: '1px solid var(--border-color)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <label className="form-label" style={{ margin: 0 }}>SUẤT & GIÁ TIỀN *</label>
-                    <div style={{ display: 'flex', gap: 4, background: 'var(--bg-surface)', padding: 3, borderRadius: 6, border: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', gap: 4, background: 'var(--bg-surface)', padding: 3, borderRadius: 6, border: '1px solid var(--border-color)', width: '100%' }}>
                       <button
                         type="button"
                         onClick={() => set('enable_categories', false)}
                         style={{
-                          padding: '4px 10px', fontSize: '0.75rem', fontWeight: 600, borderRadius: 4, border: 'none',
+                          flex: 1, padding: '6px 12px', fontSize: '0.82rem', fontWeight: 700, borderRadius: 4, border: 'none',
                           background: !form.enable_categories ? 'var(--brand)' : 'transparent',
                           color: !form.enable_categories ? '#fff' : 'var(--text-muted)', cursor: 'pointer'
                         }}
                       >
-                        Tuyển chung
+                        Chung
                       </button>
                       <button
                         type="button"
@@ -412,12 +411,12 @@ export default function CreateMatchPage() {
                           }
                         }}
                         style={{
-                          padding: '4px 10px', fontSize: '0.75rem', fontWeight: 600, borderRadius: 4, border: 'none',
+                          flex: 1, padding: '6px 12px', fontSize: '0.82rem', fontWeight: 700, borderRadius: 4, border: 'none',
                           background: form.enable_categories ? 'var(--brand)' : 'transparent',
                           color: form.enable_categories ? '#fff' : 'var(--text-muted)', cursor: 'pointer'
                         }}
                       >
-                        ⚡ Tuyển Nam / Nữ riêng
+                        Riêng (Nam/Nữ)
                       </button>
                     </div>
                   </div>
@@ -552,7 +551,6 @@ export default function CreateMatchPage() {
                         marginTop: 12, padding: '10px 12px', background: 'var(--brand-light)', border: '1px solid var(--brand-border)',
                         borderRadius: 8, fontSize: '0.82rem', color: 'var(--text-main)', fontWeight: 600
                       }}>
-                        <div style={{ color: 'var(--brand)', marginBottom: 2, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>TỔNG KẾT TUYỂN QUÂN:</div>
                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                           {(form.slot_categories || []).map((c, i) => (
                             <span key={i} style={{ color: c.gender === 'female' ? '#E11D48' : '#1D4ED8' }}>
@@ -614,9 +612,36 @@ export default function CreateMatchPage() {
                 )}
                 <div className="form-group">
                   <label className="form-label">LOẠI CẦU</label>
-                  <select className="form-select" value={form.shuttlecock} onChange={e => set('shuttlecock', e.target.value)}>
-                    {(SHUTTLECOCKS || ['Ba Sao', 'Yonex Aerosensa', 'Victor NS']).map(s => <option key={s} value={s}>{s}</option>)}
+                  <select className="form-select"
+                    value={(SHUTTLECOCKS || ['Ba Sao', 'Hải Yến', 'Victor', 'Yonex']).includes(form.shuttlecock) ? form.shuttlecock : 'other'}
+                    onChange={e => {
+                      const v = e.target.value;
+                      if (v === 'other') {
+                        set('shuttlecock', form.custom_shuttlecock || '');
+                        set('is_custom_shuttlecock', true);
+                      } else {
+                        set('shuttlecock', v);
+                        set('is_custom_shuttlecock', false);
+                      }
+                    }}
+                  >
+                    {['Ba Sao', 'Hải Yến', 'Victor', 'Yonex', 'Pro Kennex', 'Thành Công'].map(s => <option key={s} value={s}>{s}</option>)}
+                    <option value="other">✍️ Khác (Nhập tên loại cầu)...</option>
                   </select>
+
+                  {(form.is_custom_shuttlecock || !(SHUTTLECOCKS || ['Ba Sao', 'Hải Yến', 'Victor', 'Yonex']).includes(form.shuttlecock)) && (
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ marginTop: 8 }}
+                      placeholder="Nhập tên loại cầu bạn dùng (VD: Cầu Hải Yến, Cầu Nhựa...)"
+                      value={form.custom_shuttlecock !== undefined ? form.custom_shuttlecock : form.shuttlecock}
+                      onChange={e => {
+                        set('custom_shuttlecock', e.target.value);
+                        set('shuttlecock', e.target.value);
+                      }}
+                    />
+                  )}
                 </div>
 
                 <div className="form-group">
