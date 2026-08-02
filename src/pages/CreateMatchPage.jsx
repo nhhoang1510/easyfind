@@ -384,10 +384,10 @@ export default function CreateMatchPage() {
                   </div>
                 </div>
 
-                {/* ── Phân bổ Suất & Giá Tiền ── */}
+                {/* ── Suất & Giá Tiền ── */}
                 <div className="form-group" style={{ background: 'var(--bg-subtle)', padding: 14, borderRadius: 10, border: '1px solid var(--border-color)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <label className="form-label" style={{ margin: 0 }}>CẤU HÌNH SUẤT & GIÁ TIỀN *</label>
+                    <label className="form-label" style={{ margin: 0 }}>SUẤT & GIÁ TIỀN *</label>
                     <div style={{ display: 'flex', gap: 4, background: 'var(--bg-surface)', padding: 3, borderRadius: 6, border: '1px solid var(--border-color)' }}>
                       <button
                         type="button"
@@ -398,7 +398,7 @@ export default function CreateMatchPage() {
                           color: !form.enable_categories ? '#fff' : 'var(--text-muted)', cursor: 'pointer'
                         }}
                       >
-                        Đồng giá chung
+                        Tuyển chung
                       </button>
                       <button
                         type="button"
@@ -417,13 +417,13 @@ export default function CreateMatchPage() {
                           color: form.enable_categories ? '#fff' : 'var(--text-muted)', cursor: 'pointer'
                         }}
                       >
-                        ⚡ Phân bổ Nam/Nữ riêng
+                        ⚡ Tuyển Nam / Nữ riêng
                       </button>
                     </div>
                   </div>
 
                   {!form.enable_categories ? (
-                    /* ── Chế độ 1: Đồng giá chung ── */
+                    /* ── Chế độ 1: Tuyển chung ── */
                     <div className="auth-grid-2">
                       <div>
                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>SỐ SUẤT TỐI ĐA</span>
@@ -439,7 +439,7 @@ export default function CreateMatchPage() {
                       </div>
                     </div>
                   ) : (
-                    /* ── Chế độ 2: Phân bổ chi tiết Nam/Nữ & Giá riêng ── */
+                    /* ── Chế độ 2: Tuyển Nam / Nữ riêng ── */
                     <div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
                         {(form.slot_categories || []).map((cat, idx) => (
@@ -545,14 +545,14 @@ export default function CreateMatchPage() {
                           color: 'var(--brand)', borderRadius: 6, cursor: 'pointer'
                         }}
                       >
-                        + Thêm nhóm suất phân bổ
+                        + Thêm suất Nam/Nữ
                       </button>
 
                       <div style={{
                         marginTop: 12, padding: '10px 12px', background: 'var(--brand-light)', border: '1px solid var(--brand-border)',
                         borderRadius: 8, fontSize: '0.82rem', color: 'var(--text-main)', fontWeight: 600
                       }}>
-                        <div style={{ color: 'var(--brand)', marginBottom: 2, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>TỔNG KẾT SUẤT & PHÍ:</div>
+                        <div style={{ color: 'var(--brand)', marginBottom: 2, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>TỔNG KẾT TUYỂN QUÂN:</div>
                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                           {(form.slot_categories || []).map((c, i) => (
                             <span key={i} style={{ color: c.gender === 'female' ? '#E11D48' : '#1D4ED8' }}>
