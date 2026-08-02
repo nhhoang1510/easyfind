@@ -548,9 +548,18 @@ export default function CreateMatchPage() {
                         + Thêm nhóm suất phân bổ
                       </button>
 
-                      <div style={{ marginTop: 10, fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', fontWeight: 600, flexWrap: 'wrap', gap: 6 }}>
-                        <span>Tổng cộng: <strong style={{ color: 'var(--brand)' }}>{(form.slot_categories || []).reduce((s, c) => s + (parseInt(c.slots) || 0), 0)} suất</strong></span>
-                        <span>Mức giá từ: <strong style={{ color: 'var(--brand)' }}>{Math.min(...(form.slot_categories || []).map(c => c.cost || 0)).toLocaleString('vi-VN')}đ - {Math.max(...(form.slot_categories || []).map(c => c.cost || 0)).toLocaleString('vi-VN')}đ</strong></span>
+                      <div style={{
+                        marginTop: 12, padding: '10px 12px', background: 'var(--brand-light)', border: '1px solid var(--brand-border)',
+                        borderRadius: 8, fontSize: '0.82rem', color: 'var(--text-main)', fontWeight: 600
+                      }}>
+                        <div style={{ color: 'var(--brand)', marginBottom: 2, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>TỔNG KẾT SUẤT & PHÍ:</div>
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                          {(form.slot_categories || []).map((c, i) => (
+                            <span key={i} style={{ color: c.gender === 'female' ? '#E11D48' : '#1D4ED8' }}>
+                              • {c.slots} {c.gender === 'female' ? 'Nữ' : c.gender === 'male' ? 'Nam' : 'Nam/Nữ'} ({c.cost ? c.cost.toLocaleString('vi-VN') + 'đ/suất' : 'Miễn phí'})
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
