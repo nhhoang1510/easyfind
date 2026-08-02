@@ -433,45 +433,65 @@ export default function CreateMatchPage() {
                               }}
                             >✕</button>
 
-                            {/* Hàng 1: Đối tượng & Trình độ */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 8, paddingRight: 28 }}>
-                              <div>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>ĐỐI TƯỢNG</span>
-                                <select className="form-input" style={{ padding: '6px 8px', fontSize: '0.8rem', fontWeight: 600 }}
-                                  value={cat.gender}
-                                  onChange={e => {
-                                    const next = [...form.slot_categories];
-                                    next[idx].gender = e.target.value;
-                                    set('slot_categories', next);
-                                  }}
-                                >
-                                  <option value="male">♂ Nam</option>
-                                  <option value="female">♀ Nữ</option>
-                                  <option value="mixed">👫 Nam & Nữ</option>
-                                </select>
-                              </div>
+                            {/* Hàng 1: Đối tượng */}
+                            <div>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>ĐỐI TƯỢNG</span>
+                              <select className="form-input" style={{ padding: '6px 8px', fontSize: '0.8rem', fontWeight: 600 }}
+                                value={cat.gender}
+                                onChange={e => {
+                                  const next = [...form.slot_categories];
+                                  next[idx].gender = e.target.value;
+                                  set('slot_categories', next);
+                                }}
+                              >
+                                <option value="male">♂ Nam</option>
+                                <option value="female">♀ Nữ</option>
+                                <option value="mixed">👫 Nam & Nữ</option>
+                              </select>
+                            </div>
 
-                              <div>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>TRÌNH ĐỘ</span>
-                                <select className="form-input" style={{ padding: '6px 8px', fontSize: '0.8rem', fontWeight: 600 }}
-                                  value={cat.skill_level}
-                                  onChange={e => {
-                                    const next = [...form.slot_categories];
-                                    next[idx].skill_level = e.target.value;
-                                    set('slot_categories', next);
-                                  }}
-                                >
-                                  {['Mới chơi', 'Yếu', 'Trung bình yếu', 'Trung bình', 'Trung bình khá', 'Khá'].map(s => (
-                                    <option key={s} value={s}>{s}</option>
-                                  ))}
-                                </select>
+                            {/* Trình độ (cho phép chọn nhiều) */}
+                            <div>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>TRÌNH ĐỘ (CHỌN NHIỀU)</span>
+                              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                {['Mới chơi', 'Yếu', 'TB yếu', 'Trung bình', 'TB khá', 'Khá'].map(s => {
+                                  const levels = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);
+                                  const isSelected = levels.includes(s) || cat.skill_level === s;
+                                  return (
+                                    <button
+                                      key={s}
+                                      type="button"
+                                      onClick={() => {
+                                        let current = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);
+                                        if (current.includes(s)) {
+                                          current = current.filter(x => x !== s);
+                                        } else {
+                                          current.push(s);
+                                        }
+                                        const newSkillStr = current.length > 0 ? current.join(', ') : 'Trung bình';
+                                        const next = [...form.slot_categories];
+                                        next[idx].skill_level = newSkillStr;
+                                        set('slot_categories', next);
+                                      }}
+                                      style={{
+                                        padding: '3px 8px', borderRadius: 100, fontSize: '0.73rem', fontWeight: 600,
+                                        border: isSelected ? '1px solid var(--brand)' : '1px solid var(--border-color)',
+                                        background: isSelected ? 'var(--brand-light)' : 'var(--bg-surface)',
+                                        color: isSelected ? 'var(--brand)' : 'var(--text-sub)', cursor: 'pointer',
+                                        transition: 'all 0.12s'
+                                      }}
+                                    >
+                                      {isSelected ? '✓ ' : ''}{s}
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </div>
 
-                            {/* Hàng 2: Số suất & Giá tiền */}
+                            {/* Hàng 2: Số lượng & Giá/người */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 8 }}>
                               <div>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>SỐ SUẤT</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>SỐ LƯỢNG</span>
                                 <input type="number" className="form-input" min={1} max={30} style={{ padding: '6px 8px', fontSize: '0.85rem', fontWeight: 700 }}
                                   value={cat.slots}
                                   onChange={e => {
@@ -485,7 +505,7 @@ export default function CreateMatchPage() {
                               </div>
 
                               <div>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>GIÁ / NGƯỜI (VNĐ)</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>GIÁ / NGƯỜI</span>
                                 <input type="number" className="form-input" step={5000} min={0} style={{ padding: '6px 8px', fontSize: '0.85rem', fontWeight: 700 }}
                                   value={cat.cost}
                                   onChange={e => {
