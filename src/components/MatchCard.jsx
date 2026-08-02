@@ -60,27 +60,14 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
         </div>
 
         {/* Location */}
-        <div className="mc-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* Location */}
+        <div className="mc-row">
           <span className="mc-info-item">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--brand)' }}>
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
             </svg>
             {match.court_name} – {match.district}
           </span>
-          <a
-            href={match.maps_url || `https://maps.google.com/?q=${encodeURIComponent(match.court_name + ' ' + match.district + ' Hà Nội')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={e => e.stopPropagation()}
-            style={{
-              fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand)',
-              background: 'var(--brand-light)', padding: '2px 8px', borderRadius: 4,
-              textDecoration: 'none', border: '1px solid var(--brand-border)',
-              display: 'inline-flex', alignItems: 'center', gap: 3
-            }}
-          >
-            Bản đồ ↗
-          </a>
         </div>
 
         {/* Time */}
@@ -115,7 +102,7 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
         </div>
       </div>
 
-      {/* ── RIGHT: Slot status + CTA ── */}
+      {/* ── RIGHT: Slot status + CTA + Maps ── */}
       <div className="mc-action" onClick={e => e.stopPropagation()}>
         {/* Slot progress */}
         <div className="mc-slots">
@@ -137,6 +124,23 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
         >
           {isFull ? 'Đăng ký dự bị' : 'Đăng ký ngay'}
         </button>
+
+        {/* Google Maps link button (Placed below Đăng ký ngay) */}
+        <a
+          href={match.maps_url || `https://maps.google.com/?q=${encodeURIComponent(match.court_name + ' ' + match.district + ' Hà Nội')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={e => e.stopPropagation()}
+          style={{
+            fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand)',
+            background: 'var(--brand-light)', padding: '5px 12px', borderRadius: 6,
+            textDecoration: 'none', border: '1px solid var(--brand-border)',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+            marginTop: 6, width: '100%', boxSizing: 'border-box'
+          }}
+        >
+          <span>📍 Bản đồ</span> ↗
+        </a>
       </div>
 
     </div>
