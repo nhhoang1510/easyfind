@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { HN_DISTRICTS, SKILL_LEVELS } from '../utils/helpers';
 
 const GENDER_OPTIONS = [
-  { value: 'male',   label: 'Nam' },
-  { value: 'female', label: 'Nữ' },
+  { value: 'mixed',  label: 'Nam & Nữ' },
+  { value: 'male',   label: 'Chỉ Nam' },
+  { value: 'female', label: 'Chỉ Nữ' },
 ];
 
 export default function FilterBar({ filters, onChange }) {
@@ -67,7 +68,7 @@ export default function FilterBar({ filters, onChange }) {
 
           <div className="filter-divider" />
 
-          {/* 2. Giới tính (Nam / Nữ) */}
+          {/* 2. Giới tính */}
           <div className={`filter-field ${localFilters.gender_required ? 'filter-field--active' : ''}`}>
             <svg className="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
@@ -78,7 +79,7 @@ export default function FilterBar({ filters, onChange }) {
               value={localFilters.gender_required}
               onChange={e => setField('gender_required', e.target.value)}
             >
-              <option value="">Giới tính yêu cầu</option>
+              <option value="">Tất cả giới tính</option>
               {GENDER_OPTIONS.map(g => (
                 <option key={g.value} value={g.value}>{g.label}</option>
               ))}
@@ -101,7 +102,7 @@ export default function FilterBar({ filters, onChange }) {
               value={localFilters.skill_level}
               onChange={e => setField('skill_level', e.target.value)}
             >
-              <option value="">Trình độ yêu cầu</option>
+              <option value="">Tất cả trình độ</option>
               {SKILL_LEVELS.map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}

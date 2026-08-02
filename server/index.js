@@ -240,8 +240,7 @@ app.get('/api/matches', async (req, res) => {
   try {
     const { district, gender_required, skill_level, has_slot } = req.query;
     if (useMock) {
-      let results = getMatchesWithCount({ district, skill_level });
-      if (gender_required) results = results.filter(m => !m.gender_required || m.gender_required === gender_required);
+      let results = getMatchesWithCount({ district, skill_level, gender_required });
       if (has_slot === 'true') results = results.filter(m => m.confirmed_count < m.max_slots);
       return res.json(results);
     }
@@ -252,9 +251,18 @@ app.get('/api/matches', async (req, res) => {
       FROM matches m LEFT JOIN participants p ON p.match_id = m.id
       WHERE m.status != 'cancelled'`;
     const params = [];
-    if (district)        { params.push(district);        query += ` AND m.district=$${params.length}`; }
-    if (gender_required) { params.push(gender_required); query += ` AND (m.gender_required IS NULL OR m.gender_required=$${params.length})`; }
-    if (skill_level)     { params.push(skill_level);     query += ` AND m.skill_level=$${params.length}`; }
+    if (district) {
+      params.push(district);
+      query += ` AND m.district=$${params.length}`;
+    }
+    if (gender_required && gender_required !== 'mixed') {
+      params.push(gender_required);
+      query += ` AND (m.gender_required IS NULL OR m.gender_required=$${params.length} OR m.gender_required='mixed')`;
+    }
+    if (skill_level && skill_level !== 'Tất cả trình độ') {
+      params.push(`%${skill_level}%`);
+      query += ` AND (m.skill_level ILIKE $${params.length} OR m.skill_level = 'Tất cả trình độ')`;
+    }
     query += ' GROUP BY m.id ORDER BY m.play_date ASC, m.start_time ASC';
     let { rows } = await pool.query(query, params);
     if (has_slot === 'true') rows = rows.filter(r => parseInt(r.confirmed_count) < r.max_slots);

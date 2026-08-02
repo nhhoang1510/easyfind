@@ -284,9 +284,14 @@ function createUser(data) {
 function getMatchesWithCount(filters = {}) {
   if (!useMock) return null;
   let results = mockDB.matches.filter(m => m.status !== 'cancelled');
-  if (filters.city)        results = results.filter(m => m.city        === filters.city);
-  if (filters.district)    results = results.filter(m => m.district    === filters.district);
-  if (filters.skill_level) results = results.filter(m => m.skill_level === filters.skill_level);
+  if (filters.city) results = results.filter(m => m.city === filters.city);
+  if (filters.district) results = results.filter(m => m.district === filters.district);
+  if (filters.skill_level && filters.skill_level !== 'Tất cả trình độ') {
+    results = results.filter(m => m.skill_level.includes(filters.skill_level) || m.skill_level === 'Tất cả trình độ');
+  }
+  if (filters.gender_required && filters.gender_required !== 'mixed') {
+    results = results.filter(m => !m.gender_required || m.gender_required === filters.gender_required || m.gender_required === 'mixed');
+  }
   return results.map(m => {
     const pList     = mockDB.participants.filter(p => p.match_id === m.id && p.status !== 'cancelled');
     const confirmed = pList.filter(p => p.status === 'confirmed').length;
