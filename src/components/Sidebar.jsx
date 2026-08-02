@@ -16,19 +16,19 @@ export default function Sidebar({ openCount }) {
 
   return (
     <div className="sidebar">
-      {/* Host CTA */}
+      {/* Create match CTA */}
       <div className="sidebar-card sidebar-card--dark">
-        <span className="sidebar-label">Dành cho Host</span>
-        <h3 className="sidebar-title">Tạo kèo và quản lý slot tự động</h3>
+        <span className="sidebar-label">Tự tạo kèo</span>
+        <h3 className="sidebar-title">Tạo kèo & Quản lý danh sách tự động</h3>
         <p className="sidebar-desc">
-          Đếm slot, chống bùng cọc với VietQR. Không cần lọc comment Facebook nữa.
+          Tự động cập nhật danh sách người tham gia real-time. Không lo trôi comment Zalo/Facebook nữa.
         </p>
         <button
           className="btn btn-primary"
           style={{ width: '100%' }}
           onClick={handleCreateClick}
         >
-          Tạo kèo ngay
+          + Tạo kèo mới
         </button>
       </div>
 
@@ -51,7 +51,7 @@ export default function Sidebar({ openCount }) {
         <ol className="sidebar-steps">
           <li>Chọn kèo phù hợp theo quận, giờ, trình độ</li>
           <li>Đăng ký 1-click (tự động nếu đã đăng nhập)</li>
-          <li>Cọc tiền qua VietQR để giữ suất</li>
+          <li>Xác nhận tham gia không cần đặt cọc</li>
           <li>Dự bị tự đôn lên khi có người huỷ</li>
         </ol>
       </div>
