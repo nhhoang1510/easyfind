@@ -61,7 +61,7 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
                 border: `1px solid ${cat.gender === 'female' ? '#FECDD3' : '#BFDBFE'}`,
                 display: 'inline-flex', alignItems: 'center', gap: 5
               }}>
-                {cat.gender === 'female' ? '♀' : '♂'} {cat.slots} {cat.gender === 'female' ? 'Nữ' : 'Nam'} ({cat.skill_level}) – {fmtCurrency(cat.cost)}
+                {cat.slots} {cat.gender === 'female' ? 'Nữ' : 'Nam'} ({cat.skill_level}) – {fmtCurrency(cat.cost)}
               </span>
             ))}
           </div>
@@ -136,7 +136,7 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
           {isFull ? 'Đăng ký dự bị' : 'Đăng ký ngay'}
         </button>
 
-        {/* Google Maps link button (Full width on mobile below CTA) */}
+        {/* Google Maps link button */}
         <a
           href={match.maps_url || `https://maps.google.com/?q=${encodeURIComponent(match.court_name + ' ' + match.district + ' Hà Nội')}`}
           target="_blank"
@@ -150,7 +150,7 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
             width: '100%', boxSizing: 'border-box', whiteSpace: 'nowrap'
           }}
         >
-          <span>📍 Xem bản đồ sân</span> ↗
+          <span>📍 Xem bản đồ sân</span>
         </a>
       </div>
 

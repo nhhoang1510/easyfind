@@ -649,15 +649,15 @@ export default function CreateMatchPage() {
             <div className="create-nav-btns">
               {step > 1 ? (
                 <button type="button" className="create-btn-back" onClick={() => setStep(s => s - 1)}>
-                  ← Quay lại
+                  Quay lại
                 </button>
               ) : (
-                <Link to="/" className="create-btn-back">← Huỷ</Link>
+                <Link to="/" className="create-btn-back">Huỷ</Link>
               )}
 
               {step < 2 ? (
                 <button type="button" className="create-btn-next" onClick={() => setStep(s => s + 1)}>
-                  Tiếp theo →
+                  Tiếp theo
                 </button>
               ) : (
                 <button type="submit" className="create-btn-submit" disabled={loading}>
