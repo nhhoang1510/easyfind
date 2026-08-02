@@ -37,51 +37,42 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
 
       {/* ── MIDDLE: Details ── */}
       <div className="mc-body">
-        {/* Title */}
-        <h3 className="mc-title">{match.title || match.court_name}</h3>
+        {/* Court Name as Main Header */}
+        <h3 className="mc-title" style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 6px 0' }}>
+          📍 {match.court_name} <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '0.85rem' }}>– {match.district}</span>
+        </h3>
 
         {/* Host */}
-        <div className="mc-row">
+        <div className="mc-row" style={{ marginBottom: 6 }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', flexShrink: 0 }}>
             <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
           </svg>
-          <span className="mc-host">{match.host_name}</span>
+          <span className="mc-host" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Host: {match.host_name}</span>
         </div>
 
         {/* Cost / Category breakdown */}
         {match.slot_categories && match.slot_categories.length > 0 ? (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0' }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '6px 0 8px 0' }}>
             {match.slot_categories.map((cat, i) => (
               <span key={i} style={{
-                fontSize: '0.74rem', fontWeight: 600, padding: '2px 8px', borderRadius: 6,
+                fontSize: '0.8rem', fontWeight: 700, padding: '4px 10px', borderRadius: 6,
                 background: cat.gender === 'female' ? '#FFF1F2' : '#EFF6FF',
-                color: cat.gender === 'female' ? '#E11D48' : '#2563EB',
+                color: cat.gender === 'female' ? '#E11D48' : '#1D4ED8',
                 border: `1px solid ${cat.gender === 'female' ? '#FECDD3' : '#BFDBFE'}`,
-                display: 'inline-flex', alignItems: 'center', gap: 4
+                display: 'inline-flex', alignItems: 'center', gap: 5
               }}>
                 {cat.gender === 'female' ? '♀' : '♂'} {cat.slots} {cat.gender === 'female' ? 'Nữ' : 'Nam'} ({cat.skill_level}) – {fmtCurrency(cat.cost)}
               </span>
             ))}
           </div>
         ) : (
-          <div className="mc-row mc-row--cost">
+          <div className="mc-row mc-row--cost" style={{ marginBottom: 6 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
             </svg>
-            <span>{fmtCurrency(match.cost_per_slot)} / người</span>
+            <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{fmtCurrency(match.cost_per_slot)} / người</span>
           </div>
         )}
-
-        {/* Location */}
-        {/* Location */}
-        <div className="mc-row">
-          <span className="mc-info-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--brand)' }}>
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            {match.court_name} – {match.district}
-          </span>
-        </div>
 
         {/* Time */}
         <div className="mc-row">

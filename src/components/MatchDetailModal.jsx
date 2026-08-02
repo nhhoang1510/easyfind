@@ -109,21 +109,24 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
 
   function copyMatchText() {
     const participants = (match.participants || []).filter(p => p.status === 'confirmed');
-    const playerList = participants.map((p, i) => `   ${i + 1}. ${p.player_name}${p.deposit_status === 'paid' ? ' [Đã cọc]' : ' [Chưa cọc]'}`).join('\n');
+    const playerList = participants.map((p, i) => `   ${i + 1}. ${p.player_name}`).join('\n');
+    const categoriesText = match.slot_categories && match.slot_categories.length > 0
+      ? match.slot_categories.map(c => `   - ${c.gender === 'female' ? '♀ Nữ' : '♂ Nam'} (${c.skill_level}): ${c.slots} suất – ${fmtCurrency(c.cost)}`).join('\n')
+      : `   - Chi phí: ${fmtCurrency(match.cost_per_slot)} / người`;
+
     const text = [
-      `KÈO CẦU LÔNG: ${match.title.toUpperCase()}`,
+      `🎾 KÈO CẦU LÔNG: ${match.court_name ? match.court_name.toUpperCase() : ''}`,
       ``,
-      `Sân: ${match.court_name || ''}`,
-      `Khu vực: ${match.district || ''}, ${match.city || ''}`,
-      `Ngày: ${fmtDate(match.play_date)}`,
-      `Thời gian: ${fmtTime(match.start_time)} – ${fmtTime(match.end_time)}`,
-      `Số người: ${participants.length}/${match.max_slots} suất`,
-      `Chi phí: ${fmtCurrency(match.cost_per_slot)} / người`,
-      `Loại cầu: ${match.shuttlecock || ''}`,
-      `Trình độ: ${match.skill_level}`,
+      `📍 Sân: ${match.court_name || ''} (${match.district || ''})`,
+      `📅 Ngày: ${fmtDate(match.play_date)}`,
+      `⏰ Thời gian: ${fmtTime(match.start_time)} – ${fmtTime(match.end_time)}`,
+      `👥 Slot: ${participants.length}/${match.max_slots} suất`,
+      `💰 Phân bổ suất & Chi phí:`,
+      categoriesText,
+      `🏸 Loại cầu: ${match.shuttlecock || 'Ba Sao'}`,
       ``,
       `Danh sách tham gia:`,
-      playerList || '   Chưa có ai đăng ký',
+      playerList || '   (Chưa có ai đăng ký)',
       ``,
       match.note ? `Ghi chú: ${match.note}` : '',
     ].filter(Boolean).join('\n');
@@ -231,10 +234,20 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Chi phí / Suất</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#E11D48', marginTop: 3 }}>
-                        {fmtCurrency(match.cost_per_slot)}
-                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Chi phí & Phân bổ suất</div>
+                      {match.slot_categories && match.slot_categories.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+                          {match.slot_categories.map((c, i) => (
+                            <div key={i} style={{ fontSize: '0.85rem', fontWeight: 700, color: c.gender === 'female' ? '#E11D48' : '#2563EB' }}>
+                              {c.gender === 'female' ? '♀' : '♂'} {c.slots} suất {c.gender === 'female' ? 'Nữ' : 'Nam'} ({c.skill_level}) – {fmtCurrency(c.cost)}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#E11D48', marginTop: 3 }}>
+                          {fmtCurrency(match.cost_per_slot)}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Trình độ yêu cầu</div>
