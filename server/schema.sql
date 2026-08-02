@@ -62,6 +62,7 @@ CREATE TABLE matches (
   end_time        TIME NOT NULL,
   max_slots       INTEGER NOT NULL DEFAULT 8,
   cost_per_slot   NUMERIC(12,0) DEFAULT 0,
+  slot_categories JSONB DEFAULT '[]', -- Danh sách nhóm suất phân bổ chi tiết
   shuttlecock     VARCHAR(100) DEFAULT 'Ba Sao',
   skill_level     VARCHAR(50) DEFAULT 'Trung bình',
   gender_required VARCHAR(20), -- 'male' | 'female' | 'mixed' | null

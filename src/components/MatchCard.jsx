@@ -48,13 +48,29 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
           <span className="mc-host">{match.host_name}</span>
         </div>
 
-        {/* Cost */}
-        <div className="mc-row mc-row--cost">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
-          <span>{fmtCurrency(match.cost_per_slot)} / người</span>
-        </div>
+        {/* Cost / Category breakdown */}
+        {match.slot_categories && match.slot_categories.length > 0 ? (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0' }}>
+            {match.slot_categories.map((cat, i) => (
+              <span key={i} style={{
+                fontSize: '0.74rem', fontWeight: 600, padding: '2px 8px', borderRadius: 6,
+                background: cat.gender === 'female' ? '#FFF1F2' : '#EFF6FF',
+                color: cat.gender === 'female' ? '#E11D48' : '#2563EB',
+                border: `1px solid ${cat.gender === 'female' ? '#FECDD3' : '#BFDBFE'}`,
+                display: 'inline-flex', alignItems: 'center', gap: 4
+              }}>
+                {cat.gender === 'female' ? '♀' : '♂'} {cat.slots} {cat.gender === 'female' ? 'Nữ' : 'Nam'} ({cat.skill_level}) – {fmtCurrency(cat.cost)}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="mc-row mc-row--cost">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span>{fmtCurrency(match.cost_per_slot)} / người</span>
+          </div>
+        )}
 
         {/* Location */}
         {/* Location */}
