@@ -276,16 +276,114 @@ export default function CreateMatchPage() {
                     value={form.play_date} onChange={e => set('play_date', e.target.value)} />
                 </div>
 
-                <div className="auth-grid-2">
-                  <div className="form-group">
-                    <label className="form-label">GIỜ BẮT ĐẦU *</label>
-                    <input type="time" className="form-input" required lang="vi" data-time-format="HH:mm"
-                      value={form.start_time} onChange={e => set('start_time', e.target.value)} />
+                {/* ── Gợi ý chọn nhanh khung giờ 24h ── */}
+                <div className="form-group">
+                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>KHUNG GIỜ CHƠI (24H) *</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--brand)', fontWeight: 600 }}>Định dạng 24:00</span>
+                  </label>
+
+                  {/* Nút chọn nhanh khung giờ phổ biến */}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                    {[
+                      { label: '06:00 - 08:00', start: '06:00', end: '08:00' },
+                      { label: '08:00 - 10:00', start: '08:00', end: '10:00' },
+                      { label: '17:00 - 19:00', start: '17:00', end: '19:00' },
+                      { label: '18:00 - 20:00', start: '18:00', end: '20:00' },
+                      { label: '19:00 - 21:00', start: '19:00', end: '21:00' },
+                      { label: '19:30 - 21:30', start: '19:30', end: '21:30' },
+                      { label: '20:00 - 22:00', start: '20:00', end: '22:00' },
+                    ].map(preset => {
+                      const isActive = form.start_time === preset.start && form.end_time === preset.end;
+                      return (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => {
+                            set('start_time', preset.start);
+                            set('end_time', preset.end);
+                          }}
+                          style={{
+                            padding: '6px 10px', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600,
+                            border: isActive ? '1px solid var(--brand)' : '1px solid var(--border-color)',
+                            background: isActive ? 'var(--brand-light)' : 'var(--bg-surface)',
+                            color: isActive ? 'var(--brand)' : 'var(--text-main)',
+                            cursor: 'pointer', transition: 'all 0.15s'
+                          }}
+                        >
+                          ⚡ {preset.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">GIỜ KẾT THÚC *</label>
-                    <input type="time" className="form-input" required lang="vi" data-time-format="HH:mm"
-                      value={form.end_time} onChange={e => set('end_time', e.target.value)} />
+
+                  {/* Bộ chọn giờ 24h dạng Dropdown responsive cho mobile */}
+                  <div className="auth-grid-2">
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>GIỜ BẮT ĐẦU (24H)</span>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <select
+                          className="form-input"
+                          style={{ flex: 1, paddingRight: 4, fontWeight: 600 }}
+                          value={(form.start_time || '18:00').split(':')[0]}
+                          onChange={e => {
+                            const mm = (form.start_time || '18:00').split(':')[1] || '00';
+                            set('start_time', `${e.target.value.padStart(2, '0')}:${mm}`);
+                          }}
+                        >
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hh = i.toString().padStart(2, '0');
+                            return <option key={hh} value={hh}>{hh} Giờ</option>;
+                          })}
+                        </select>
+                        <select
+                          className="form-input"
+                          style={{ width: 85, fontWeight: 600 }}
+                          value={(form.start_time || '18:00').split(':')[1] || '00'}
+                          onChange={e => {
+                            const hh = (form.start_time || '18:00').split(':')[0] || '18';
+                            set('start_time', `${hh}:${e.target.value}`);
+                          }}
+                        >
+                          {['00', '15', '30', '45'].map(m => (
+                            <option key={m} value={m}>:{m}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>GIỜ KẾT THÚC (24H)</span>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <select
+                          className="form-input"
+                          style={{ flex: 1, paddingRight: 4, fontWeight: 600 }}
+                          value={(form.end_time || '20:00').split(':')[0]}
+                          onChange={e => {
+                            const mm = (form.end_time || '20:00').split(':')[1] || '00';
+                            set('end_time', `${e.target.value.padStart(2, '0')}:${mm}`);
+                          }}
+                        >
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hh = i.toString().padStart(2, '0');
+                            return <option key={hh} value={hh}>{hh} Giờ</option>;
+                          })}
+                        </select>
+                        <select
+                          className="form-input"
+                          style={{ width: 85, fontWeight: 600 }}
+                          value={(form.end_time || '20:00').split(':')[1] || '00'}
+                          onChange={e => {
+                            const hh = (form.end_time || '20:00').split(':')[0] || '20';
+                            set('end_time', `${hh}:${e.target.value}`);
+                          }}
+                        >
+                          {['00', '15', '30', '45'].map(m => (
+                            <option key={m} value={m}>:{m}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

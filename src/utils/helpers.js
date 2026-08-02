@@ -15,7 +15,13 @@ export function fmtDate(dateStr) {
 
 export function fmtTime(timeStr) {
   if (!timeStr) return '';
-  return timeStr.substring(0, 5);
+  const parts = timeStr.trim().split(':');
+  if (parts.length >= 2) {
+    const hh = parts[0].padStart(2, '0');
+    const mm = parts[1].padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+  return timeStr;
 }
 
 export function fmtPhone(phone) {
