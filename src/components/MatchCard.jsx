@@ -74,45 +74,41 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
           </div>
         )}
 
-        {/* Time */}
-        <div className="mc-row">
+        {/* Time & Shuttlecock */}
+        <div className="mc-row" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span className="mc-info-item">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-light)' }}>
               <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
             {fmtTime(match.start_time)} – {fmtTime(match.end_time)}
           </span>
+          <span className="mc-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, padding: '2px 8px' }}>
+            🏸 {match.shuttlecock || 'Ba Sao'}
+          </span>
         </div>
 
-        {/* Tags row */}
-        <div className="mc-tags">
-          <span className="mc-tag" style={{ background: skillStyle.bg, color: skillStyle.text, border: `1px solid ${skillStyle.text}22` }}>
-            {match.skill_level}
-          </span>
-          {match.gender_required && (
-            <span className="mc-tag">
-              {GENDER_LABEL[match.gender_required] || match.gender_required}
+        {/* Tags row (Chỉ hiển thị khi KHÔNG có nhóm suất phân bổ riêng) */}
+        {(!match.slot_categories || match.slot_categories.length === 0) && (
+          <div className="mc-tags" style={{ marginTop: 6 }}>
+            <span className="mc-tag" style={{ background: skillStyle.bg, color: skillStyle.text, border: `1px solid ${skillStyle.text}22` }}>
+              {match.skill_level}
             </span>
-          )}
-          <span className="mc-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <ellipse cx="12" cy="7" rx="5" ry="2" />
-              <line x1="7" y1="7" x2="12" y2="19" />
-              <line x1="17" y1="7" x2="12" y2="19" />
-              <circle cx="12" cy="19" r="1.5" fill="currentColor" />
-            </svg>
-            {match.shuttlecock || 'Ba Sao'}
-          </span>
-        </div>
+            {match.gender_required && (
+              <span className="mc-tag">
+                {GENDER_LABEL[match.gender_required] || match.gender_required}
+              </span>
+            )}
+          </div>
+        )}
 
-        {/* Note of host */}
+        {/* Ghi chú của Host */}
         {match.note && (
           <div style={{
-            fontSize: '0.78rem', color: '#D97706', background: '#FEF3C7',
-            padding: '4px 8px', borderRadius: 6, marginTop: 6, border: '1px solid #FDE68A',
-            display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500
+            fontSize: '0.8rem', color: '#D97706', background: '#FEF3C7',
+            padding: '5px 10px', borderRadius: 6, marginTop: 6, border: '1px solid #FDE68A',
+            display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600
           }}>
-            💬 <i>"{match.note}"</i>
+            💬 Ghi chú: "{match.note}"
           </div>
         )}
       </div>

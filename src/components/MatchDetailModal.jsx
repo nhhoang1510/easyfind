@@ -9,14 +9,14 @@ import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import AIForensicReport from './AIForensicReport';
 
-export default function MatchDetailModal({ match: initMatch, initialTab = 'info', onClose, onUpdate, onShowAuth }) {
+export default function MatchDetailModal({ match: initMatch, initialTab = 'players', onClose, onUpdate, onShowAuth }) {
   const { user } = useAuth();
   const isHost = user && (user.role === 'host') && (user.id === initMatch.host_id || user.full_name === initMatch.host_name);
 
   const [match, setMatch] = useState(initMatch);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
-  const [tab, setTab] = useState(initialTab); // info | players | join | qr | copy
+  const [tab, setTab] = useState(initialTab === 'info' ? 'players' : initialTab); // players | join | qr | copy
   const [form, setForm] = useState({
     player_name: user?.full_name || '',
     player_phone: user?.phone || '',
@@ -154,10 +154,10 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
         <div className="modal-header">
           <div style={{ minWidth: 0, paddingRight: 16 }}>
             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E11D48', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>
-              {match.district}, {match.city}
+              📍 {match.court_name} – {match.district}
             </div>
             <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
-              {match.title}
+              Chi tiết danh sách & Đăng ký
             </h2>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose} style={{ fontSize: '1.2rem', padding: '4px 10px' }}>
@@ -168,8 +168,7 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
         {/* Tab switcher */}
         <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
           {[
-            { id: 'info', label: 'THÔNG TIN KÈO' },
-            { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots})` },
+            { id: 'players', label: `DANH SÁCH THAM GIA (${confirmed.length}/${match.max_slots})` },
             { id: 'copy', label: 'COPY BÀI ZALO' },
           ].map(t => (
             <button
@@ -178,7 +177,7 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'info'
               style={{
                 flex: 1,
                 padding: '12px 8px',
-                fontSize: '0.8rem',
+                fontSize: '0.82rem',
                 fontWeight: 700,
                 border: 'none',
                 borderBottom: tab === t.id ? '2px solid var(--brand)' : '2px solid transparent',

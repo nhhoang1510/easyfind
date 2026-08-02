@@ -619,7 +619,7 @@ export default function CreateMatchPage() {
                     }}
                   >
                     {['Ba Sao', 'Hải Yến', 'Victor', 'Yonex', 'Pro Kennex', 'Thành Công'].map(s => <option key={s} value={s}>{s}</option>)}
-                    <option value="other">✍️ Khác (Nhập tên loại cầu)...</option>
+                    <option value="other">Khác (Nhập tên loại cầu)...</option>
                   </select>
 
                   {(form.is_custom_shuttlecock || !(SHUTTLECOCKS || ['Ba Sao', 'Hải Yến', 'Victor', 'Yonex']).includes(form.shuttlecock)) && (
