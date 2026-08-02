@@ -16,21 +16,6 @@ export default function Sidebar({ openCount }) {
 
   return (
     <div className="sidebar">
-      {/* Create match CTA */}
-      <div className="sidebar-card sidebar-card--dark">
-        <span className="sidebar-label">Tự tạo kèo</span>
-        <h3 className="sidebar-title">Tạo kèo & Quản lý danh sách tự động</h3>
-        <p className="sidebar-desc">
-          Tự động cập nhật danh sách người tham gia real-time. Không lo trôi comment Zalo/Facebook nữa.
-        </p>
-        <button
-          className="btn btn-primary"
-          style={{ width: '100%' }}
-          onClick={handleCreateClick}
-        >
-          + Tạo kèo mới
-        </button>
-      </div>
 
       {/* Stats */}
       <div className="sidebar-card">
