@@ -497,25 +497,52 @@ body {
 }
 .mc-cta--full:hover { background: var(--text-sub); }
 
-/* ── MatchCard Mobile ── */
+/* ── MatchCard Mobile Responsive ── */
 @media (max-width: 700px) {
   .mc {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-    padding: 16px;
+    padding: 14px 16px;
   }
   .mc-badge {
     flex-direction: row;
-    justify-content: flex-start;
-    min-height: unset;
-    padding: 8px 12px;
-    gap: 10px;
-  }
-  .mc-badge-time { font-size: 1rem; }
-  .mc-action {
-    flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    min-height: unset;
+    padding: 8px 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .mc-badge-time { font-size: 1rem; }
+  .mc-title {
+    font-size: 1.05rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .mc-action {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
+  }
+  .mc-slots {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .mc-slots-label {
+    text-align: left;
+    margin-bottom: 4px;
+  }
+  .mc-cta {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.9rem;
   }
 }
 

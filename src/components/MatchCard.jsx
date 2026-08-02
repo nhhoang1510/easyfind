@@ -122,21 +122,21 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
           {isFull ? 'Đăng ký dự bị' : 'Đăng ký ngay'}
         </button>
 
-        {/* Google Maps link button (Placed below Đăng ký ngay) */}
+        {/* Google Maps link button (Full width on mobile below CTA) */}
         <a
           href={match.maps_url || `https://maps.google.com/?q=${encodeURIComponent(match.court_name + ' ' + match.district + ' Hà Nội')}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={e => e.stopPropagation()}
           style={{
-            fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand)',
-            background: 'var(--brand-light)', padding: '5px 12px', borderRadius: 6,
+            fontSize: '0.82rem', fontWeight: 600, color: 'var(--brand)',
+            background: 'var(--brand-light)', padding: '9px 12px', borderRadius: 6,
             textDecoration: 'none', border: '1px solid var(--brand-border)',
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-            marginTop: 6, width: '100%', boxSizing: 'border-box'
+            width: '100%', boxSizing: 'border-box', whiteSpace: 'nowrap'
           }}
         >
-          <span>📍 Bản đồ</span> ↗
+          <span>📍 Xem bản đồ sân</span> ↗
         </a>
       </div>
 
