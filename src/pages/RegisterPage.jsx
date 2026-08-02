@@ -264,24 +264,6 @@ export default function RegisterPage() {
 
               {currentStepInfo.id === 'details' && (
                 <>
-                  <div>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Vai trò</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                      {[
-                        { value: 'player', label: 'Người chơi', desc: 'Tìm kèo, tham gia' },
-                        { value: 'host',   label: 'Người tổ chức', desc: 'Tạo kèo, quản lý' },
-                      ].map(r => (
-                        <div key={r.value} onClick={() => set('role', r.value)} style={{
-                          padding: '11px 12px', cursor: 'pointer', borderRadius: 8,
-                          border: `1.5px solid ${form.role === r.value ? '#1a73e8' : '#dadce0'}`,
-                          background: form.role === r.value ? '#e8f0fe' : '#fff',
-                        }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.88rem', color: form.role === r.value ? '#1a73e8' : '#202124' }}>{r.label}</div>
-                          <div style={{ fontSize: '0.76rem', color: '#5f6368', marginTop: 2 }}>{r.desc}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
 
                   <div>
                     <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5f6368', marginBottom: 8, textTransform: 'uppercase' }}>Giới tính</div>

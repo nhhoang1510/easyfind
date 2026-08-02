@@ -284,24 +284,6 @@ export default function AuthModal({ onClose, defaultTab = 'login' }) {
               {/* STEP 3: Thông tin bổ sung */}
               {step === 3 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {/* Vai trò */}
-                  <div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Vai trò</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                      {ROLE_OPTIONS.map(r => (
-                        <div key={r.value} onClick={() => setReg('role', r.value)}
-                          style={{
-                            padding: '12px', cursor: 'pointer', borderRadius: 8,
-                            border: `1.5px solid ${regForm.role === r.value ? 'var(--brand)' : 'var(--border-color)'}`,
-                            background: regForm.role === r.value ? 'var(--brand-light)' : 'var(--bg-surface)',
-                            transition: 'all 0.15s',
-                          }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.88rem', color: regForm.role === r.value ? 'var(--brand)' : 'var(--text-main)' }}>{r.label}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>{r.desc}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* Giới tính */}
                   <div>

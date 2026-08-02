@@ -7,51 +7,30 @@
 DROP TABLE IF EXISTS participants CASCADE;
 DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS courts CASCADE;
-DROP TABLE IF EXISTS hosts CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 -- =============================================
--- TABLE 1: users (Tài khoản Người Chơi - Player)
+-- TABLE 1: users (Tài khoản Người Dùng Unified User Account)
 -- =============================================
 CREATE TABLE users (
-  id            SERIAL PRIMARY KEY,
-  full_name     VARCHAR(100) NOT NULL,
-  username      VARCHAR(100) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  gender        VARCHAR(20) NOT NULL DEFAULT 'other',  -- 'male' | 'female' | 'other'
-  skill_level   VARCHAR(50),  -- 'Mới chơi' | 'Yếu' | 'Trung bình yếu' | 'Trung bình' | 'Trung bình khá' | 'Khá'
-  city          VARCHAR(100) DEFAULT 'Hà Nội',
-  avatar_color  VARCHAR(30) DEFAULT '#00F5C4',
-  is_active     BOOLEAN DEFAULT true,
-  created_at    TIMESTAMP DEFAULT NOW()
+  id                SERIAL PRIMARY KEY,
+  full_name         VARCHAR(100) NOT NULL,
+  username          VARCHAR(100) UNIQUE NOT NULL,
+  password_hash     VARCHAR(255) NOT NULL,
+  gender            VARCHAR(20) NOT NULL DEFAULT 'other',  -- 'male' | 'female' | 'other'
+  skill_level       VARCHAR(50),  -- 'Mới chơi' | 'Yếu' | 'Trung bình yếu' | 'Trung bình' | 'Trung bình khá' | 'Khá'
+  phone             VARCHAR(20),
+  is_phone_verified BOOLEAN DEFAULT false,
+  city              VARCHAR(100) DEFAULT 'Hà Nội',
+  avatar_color      VARCHAR(30) DEFAULT '#00F5C4',
+  is_active         BOOLEAN DEFAULT true,
+  created_at        TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX idx_users_username ON users(username);
 
 -- =============================================
--- TABLE 2: hosts (Tài khoản Người Tổ Chức - Host)
--- =============================================
-CREATE TABLE hosts (
-  id            SERIAL PRIMARY KEY,
-  full_name     VARCHAR(100) NOT NULL,
-  username      VARCHAR(100) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  gender        VARCHAR(20) NOT NULL DEFAULT 'other',
-  phone             VARCHAR(20),
-  is_phone_verified BOOLEAN DEFAULT false,
-  bank_name         VARCHAR(100),
-  bank_account      VARCHAR(50),
-  bank_owner        VARCHAR(100),
-  city              VARCHAR(100) DEFAULT 'Hà Nội',
-  avatar_color      VARCHAR(30) DEFAULT '#AAFF00',
-  is_active         BOOLEAN DEFAULT true,
-  created_at        TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX idx_hosts_username ON hosts(username);
-
--- =============================================
--- TABLE 3: courts (Danh mục Sân Cầu Lông)
+-- TABLE 2: courts (Danh mục Sân Cầu Lông)
 -- =============================================
 CREATE TABLE courts (
   id          SERIAL PRIMARY KEY,
@@ -66,12 +45,12 @@ CREATE TABLE courts (
 CREATE INDEX idx_courts_city_district ON courts(city, district);
 
 -- =============================================
--- TABLE 4: matches (Thông tin Kèo Đấu do Host tạo)
+-- TABLE 3: matches (Thông tin Kèo Đấu do Người dùng tạo)
 -- =============================================
 CREATE TABLE matches (
   id              SERIAL PRIMARY KEY,
   title           VARCHAR(300) NOT NULL,
-  host_id         INTEGER REFERENCES hosts(id) ON DELETE SET NULL,
+  host_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
   host_name       VARCHAR(100) NOT NULL,
   host_phone      VARCHAR(20),
   court_id        INTEGER REFERENCES courts(id) ON DELETE SET NULL,

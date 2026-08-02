@@ -11,10 +11,6 @@ export default function Sidebar({ openCount }) {
       navigate('/login');
       return;
     }
-    if (user.role !== 'host') {
-      alert('Bạn cần đăng ký tài khoản Host để tạo kèo.');
-      return;
-    }
     navigate('/create-match');
   }
 

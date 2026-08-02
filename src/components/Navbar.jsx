@@ -22,16 +22,14 @@ export default function Navbar() {
             <div className="skeleton" style={{ width: 80, height: 32 }} />
           ) : user ? (
             <div className="topbar-user-area">
-              {user.role === 'host' && (
-                <Link
-                  to="/create-match"
-                  id="btn-create-match"
-                  className="btn btn-primary btn-sm"
-                  style={{ textDecoration: 'none' }}
-                >
-                  + Tạo kèo
-                </Link>
-              )}
+              <Link
+                to="/create-match"
+                id="btn-create-match"
+                className="btn btn-primary btn-sm"
+                style={{ textDecoration: 'none' }}
+              >
+                + Tạo kèo
+              </Link>
               <UserMenu />
             </div>
           ) : (

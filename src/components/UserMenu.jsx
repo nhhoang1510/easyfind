@@ -48,7 +48,7 @@ export default function UserMenu() {
        <div>
          <div className="user-dropdown-name">{user.full_name}</div>
          <div className="user-dropdown-role">
-           @{user.username} · {ROLE_LABELS[user.role]} {isHost && '🛡️'}
+           @{user.username}
          </div>
        </div>
      </div>

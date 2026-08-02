@@ -105,8 +105,8 @@ function HomePage() {
               <div className="panel-card" style={{ textAlign: 'center', padding: '48px 20px' }}>
                 <h3 style={{ marginBottom: 6, fontSize: '0.95rem' }}>Chưa có kèo nào</h3>
                 <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: '0.85rem' }}>Thử thay đổi bộ lọc hoặc tạo kèo mới</p>
-                {user?.role === 'host' && (
-                  <button className="btn btn-primary btn-sm" onClick={() => navigate('/create-match')}>Tạo kèo</button>
+                {user && (
+                  <button className="btn btn-primary btn-sm" onClick={() => navigate('/create-match')}>+ Tạo kèo mới</button>
                 )}
               </div>
             ) : (

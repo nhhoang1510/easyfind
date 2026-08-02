@@ -45,7 +45,7 @@ export default function CreateMatchPage() {
   const [aiReport, setAiReport] = useState(null);
 
   useEffect(() => {
-    if (!user || user.role !== 'host') {
+    if (!user) {
       navigate('/');
     }
     api.getCourts().then(setCourts).catch(() => {});
