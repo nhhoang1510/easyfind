@@ -77,18 +77,19 @@ export default function CreateMatchPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (step < 2) {
-      setStep(s => s + 1);
-      return;
-    }
-    setLoading(true); setMsg(null);
+    setLoading(true);
+    setMsg(null);
     try {
-      const generatedTitle = `Giao lưu ${form.court_name || 'Cầu Lông'} (${fmtTime(form.start_time)} - ${fmtTime(form.end_time)})`;
+      if (!form.court_name) return setMsg({ type: 'error', text: 'Vui lòng nhập hoặc chọn Tên Sân' });
+      const generatedTitle = `Giao lưu ${form.court_name} (${fmtTime(form.start_time || '18:00')} - ${fmtTime(form.end_time || '20:00')})`;
       const payload = {
         ...form,
         title: form.title || generatedTitle,
+        district: form.district || 'Hai Bà Trưng',
+        start_time: form.start_time || '18:00',
+        end_time: form.end_time || '20:00',
         court_id: form.court_id ? parseInt(form.court_id) : null,
-        max_slots: parseInt(form.max_slots),
+        max_slots: parseInt(form.max_slots) || 10,
         cost_per_slot: parseFloat(form.cost_per_slot) || 0,
         skill_level: (form.skill_levels || ['Tất cả trình độ']).join(', '),
       };
@@ -118,7 +119,7 @@ export default function CreateMatchPage() {
         {/* Header */}
         <div className="create-page-header">
           <h1 className="create-page-title">Tạo Kèo Mới</h1>
-          <p className="create-page-sub">Nhập thông tin sân, giờ đánh và số suất để tuyển quân ngay!</p>
+          <p className="create-page-sub">Nhập thông tin sân, giờ đánh và số lượng để tuyển quân ngay!</p>
         </div>
 
         {/* Card */}
@@ -146,7 +147,7 @@ export default function CreateMatchPage() {
                       setTimeout(() => {
                         setCourtDropOpen(false);
                         if (courtSearch) set('court_name', courtSearch);
-                      }, 150);
+                      }, 200);
                     }}
                   />
                   {(courtSearch || form.court_name) && (
@@ -159,24 +160,56 @@ export default function CreateMatchPage() {
                   )}
                 </div>
 
-                <div className="auth-grid-2">
-                  <div className="form-group">
-                    <label className="form-label">TÊN HOST *</label>
-                    <input className="form-input" required placeholder="Họ tên host"
-                      value={form.host_name} onChange={e => set('host_name', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">SĐT / ZALO CỦA HOST</label>
-                    <input className="form-input" placeholder="0912 345 678"
-                      value={form.host_phone} onChange={e => set('host_phone', e.target.value)} />
-                  </div>
-                </div>
+                {/* Dropdown Gợi Ý Tên Sân */}
+                {courtDropOpen && (() => {
+                  const term = (courtSearch || form.court_name || '').toLowerCase().trim();
+                  const filtered = courts.filter(c =>
+                    !term ||
+                    c.name.toLowerCase().includes(term) ||
+                    (c.address && c.address.toLowerCase().includes(term)) ||
+                    (c.district && c.district.toLowerCase().includes(term))
+                  );
+                  if (filtered.length === 0) return null;
+                  return (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+                      background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-md)',
+                      maxHeight: 220, overflowY: 'auto', marginTop: 4,
+                    }}>
+                      {filtered.map(c => (
+                        <div key={c.id} onClick={() => handleCourtSelect(c)}
+                          onMouseDown={e => e.preventDefault()}
+                          style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '0.85rem', borderBottom: '1px solid var(--border-color)' }}>
+                          <div style={{ fontWeight: 600 }}>{c.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            📍 {c.address || [c.district, c.city].filter(Boolean).join(', ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
 
+              <div className="auth-grid-2">
                 <div className="form-group">
-                  <label className="form-label">NGÀY CHƠI *</label>
-                  <input type="date" className="form-input" required min={new Date().toISOString().split('T')[0]}
-                    value={form.play_date} onChange={e => set('play_date', e.target.value)} />
+                  <label className="form-label">TÊN HOST *</label>
+                  <input className="form-input" required placeholder="Họ tên host"
+                    value={form.host_name} onChange={e => set('host_name', e.target.value)} />
                 </div>
+                <div className="form-group">
+                  <label className="form-label">SĐT / ZALO CỦA HOST</label>
+                  <input className="form-input" placeholder="0912 345 678"
+                    value={form.host_phone} onChange={e => set('host_phone', e.target.value)} />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">NGÀY CHƠI *</label>
+                <input type="date" className="form-input" required min={new Date().toISOString().split('T')[0]}
+                  value={form.play_date} onChange={e => set('play_date', e.target.value)} />
+              </div>
 
                 {/* ── Khung giờ ── */}
                 <div className="form-group">
@@ -210,7 +243,7 @@ export default function CreateMatchPage() {
                             cursor: 'pointer', transition: 'all 0.15s'
                           }}
                         >
-                          ⚡ {preset.label}
+                          {preset.label}
                         </button>
                       );
                     })}
@@ -232,7 +265,7 @@ export default function CreateMatchPage() {
                         >
                           {Array.from({ length: 24 }, (_, i) => {
                             const hh = i.toString().padStart(2, '0');
-                            return <option key={hh} value={hh}>{hh}h</option>;
+                            return <option key={hh} value={hh}>{hh}</option>;
                           })}
                         </select>
                         <select
@@ -265,7 +298,7 @@ export default function CreateMatchPage() {
                         >
                           {Array.from({ length: 24 }, (_, i) => {
                             const hh = i.toString().padStart(2, '0');
-                            return <option key={hh} value={hh}>{hh}h</option>;
+                            return <option key={hh} value={hh}>{hh}</option>;
                           })}
                         </select>
                         <select
@@ -580,7 +613,6 @@ export default function CreateMatchPage() {
                   {loading ? 'Đang tạo kèo...' : 'Đăng kèo'}
                 </button>
               </div>
-            </div>
           </form>
         </div>
       </div>
