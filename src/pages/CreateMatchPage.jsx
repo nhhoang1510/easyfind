@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { SKILL_LEVELS, CITIES, HN_DISTRICTS, HCM_DISTRICTS, DN_DISTRICTS, SHUTTLECOCKS, BANKS } from '../utils/helpers';
+import { SKILL_LEVELS, CITIES, HN_DISTRICTS, HCM_DISTRICTS, DN_DISTRICTS, SHUTTLECOCKS, BANKS, fmtTime } from '../utils/helpers';
 import LogoIcon from '../components/LogoIcon';
 import AIForensicReport from '../components/AIForensicReport';
 
@@ -83,8 +83,10 @@ export default function CreateMatchPage() {
     }
     setLoading(true); setMsg(null);
     try {
+      const generatedTitle = `Giao lưu ${form.court_name || 'Cầu Lông'} (${fmtTime(form.start_time)} - ${fmtTime(form.end_time)})`;
       const payload = {
         ...form,
+        title: form.title || generatedTitle,
         court_id: form.court_id ? parseInt(form.court_id) : null,
         max_slots: parseInt(form.max_slots),
         cost_per_slot: parseFloat(form.cost_per_slot) || 0,
@@ -151,33 +153,14 @@ export default function CreateMatchPage() {
             {/* ─── Step 1 ─── */}
             {step === 1 && (
               <div className="create-form-body">
-                <div className="form-group">
-                  <label className="form-label">TIÊU ĐỀ KÈO *</label>
-                  <input className="form-input" required placeholder="VD: Kèo Chiều Thứ 4 Đống Đa - Trung Bình"
-                    value={form.title} onChange={e => set('title', e.target.value)} />
-                </div>
-
-                <div className="auth-grid-2">
-                  <div className="form-group">
-                    <label className="form-label">TÊN HOST *</label>
-                    <input className="form-input" required placeholder="Họ tên host"
-                      value={form.host_name} onChange={e => set('host_name', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">SĐT / ZALO CỦA HOST</label>
-                    <input className="form-input" placeholder="0912 345 678"
-                      value={form.host_phone} onChange={e => set('host_phone', e.target.value)} />
-                  </div>
-                </div>
-
                 {/* ── Court search ── */}
                 <div className="form-group" style={{ position: 'relative' }}>
-                  <label className="form-label">TÊN SÂN *</label>
+                  <label className="form-label">TÊN SÂN HOẶC ĐỊA CHỈ *</label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="Gõ tên sân để tìm hoặc nhập mới..."
+                      placeholder="Gõ tên sân hoặc đường/phường/quận để tìm..."
                       value={courtSearch || form.court_name}
                       onChange={e => handleCourtSearchChange(e.target.value)}
                       onFocus={() => setCourtDropOpen(true)}
@@ -198,10 +181,14 @@ export default function CreateMatchPage() {
                     )}
                   </div>
 
-                  {/* Dropdown gợi ý */}
+                  {/* Dropdown gợi ý (Tìm theo tên sân HOẶC địa chỉ/quận) */}
                   {courtDropOpen && (() => {
+                    const term = (courtSearch || '').toLowerCase().trim();
                     const filtered = courts.filter(c =>
-                      !courtSearch || c.name.toLowerCase().includes(courtSearch.toLowerCase())
+                      !term ||
+                      c.name.toLowerCase().includes(term) ||
+                      (c.address && c.address.toLowerCase().includes(term)) ||
+                      (c.district && c.district.toLowerCase().includes(term))
                     );
                     if (filtered.length === 0) return null;
                     return (
@@ -217,7 +204,7 @@ export default function CreateMatchPage() {
                             style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '0.85rem', borderBottom: '1px solid var(--border-color)' }}>
                             <div style={{ fontWeight: 600 }}>{c.name}</div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                              {c.address || [c.district, c.city].filter(Boolean).join(', ')}
+                              📍 {c.address || [c.district, c.city].filter(Boolean).join(', ')}
                             </div>
                           </div>
                         ))}
@@ -264,6 +251,19 @@ export default function CreateMatchPage() {
                     />
                   )}
                 </div>
+
+                <div className="auth-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">TÊN HOST *</label>
+                    <input className="form-input" required placeholder="Họ tên host"
+                      value={form.host_name} onChange={e => set('host_name', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">SĐT / ZALO CỦA HOST</label>
+                    <input className="form-input" placeholder="0912 345 678"
+                      value={form.host_phone} onChange={e => set('host_phone', e.target.value)} />
+                  </div>
+                </div>
               </div>
             )}
 
@@ -276,12 +276,9 @@ export default function CreateMatchPage() {
                     value={form.play_date} onChange={e => set('play_date', e.target.value)} />
                 </div>
 
-                {/* ── Gợi ý chọn nhanh khung giờ 24h ── */}
+                {/* ── Khung giờ ── */}
                 <div className="form-group">
-                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>KHUNG GIỜ CHƠI (24H) *</span>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--brand)', fontWeight: 600 }}>Định dạng 24:00</span>
-                  </label>
+                  <label className="form-label">KHUNG GIỜ CHƠI *</label>
 
                   {/* Nút chọn nhanh khung giờ phổ biến */}
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -317,10 +314,10 @@ export default function CreateMatchPage() {
                     })}
                   </div>
 
-                  {/* Bộ chọn giờ 24h dạng Dropdown responsive cho mobile */}
+                  {/* Bộ chọn giờ dạng Dropdown responsive */}
                   <div className="auth-grid-2">
                     <div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>GIỜ BẮT ĐẦU (24H)</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>GIỜ BẮT ĐẦU</span>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <select
                           className="form-input"
@@ -333,12 +330,12 @@ export default function CreateMatchPage() {
                         >
                           {Array.from({ length: 24 }, (_, i) => {
                             const hh = i.toString().padStart(2, '0');
-                            return <option key={hh} value={hh}>{hh} Giờ</option>;
+                            return <option key={hh} value={hh}>{hh}h</option>;
                           })}
                         </select>
                         <select
                           className="form-input"
-                          style={{ width: 85, fontWeight: 600 }}
+                          style={{ width: 80, fontWeight: 600 }}
                           value={(form.start_time || '18:00').split(':')[1] || '00'}
                           onChange={e => {
                             const hh = (form.start_time || '18:00').split(':')[0] || '18';
@@ -353,7 +350,7 @@ export default function CreateMatchPage() {
                     </div>
 
                     <div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>GIỜ KẾT THÚC (24H)</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>GIỜ KẾT THÚC</span>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <select
                           className="form-input"
@@ -366,12 +363,12 @@ export default function CreateMatchPage() {
                         >
                           {Array.from({ length: 24 }, (_, i) => {
                             const hh = i.toString().padStart(2, '0');
-                            return <option key={hh} value={hh}>{hh} Giờ</option>;
+                            return <option key={hh} value={hh}>{hh}h</option>;
                           })}
                         </select>
                         <select
                           className="form-input"
-                          style={{ width: 85, fontWeight: 600 }}
+                          style={{ width: 80, fontWeight: 600 }}
                           value={(form.end_time || '20:00').split(':')[1] || '00'}
                           onChange={e => {
                             const hh = (form.end_time || '20:00').split(':')[0] || '20';

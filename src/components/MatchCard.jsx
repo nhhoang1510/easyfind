@@ -38,7 +38,7 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
       {/* ── MIDDLE: Details ── */}
       <div className="mc-body">
         {/* Title */}
-        <h3 className="mc-title">{match.title}</h3>
+        <h3 className="mc-title">{match.title || match.court_name}</h3>
 
         {/* Host */}
         <div className="mc-row">
