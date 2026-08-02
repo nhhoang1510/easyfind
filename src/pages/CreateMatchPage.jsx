@@ -212,33 +212,6 @@ export default function CreateMatchPage() {
                     );
                   })()}
 
-                  {/* Sân có sẵn trong DB: hiện địa chỉ + link Google Maps */}
-                  {form.court_id && (() => {
-                    const court = courts.find(c => c.id === form.court_id);
-                    if (!court) return null;
-                    const addr = court.address || [court.district, court.city].filter(Boolean).join(', ');
-                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(court.name + ' ' + addr)}`;
-                    return (
-                      <div style={{
-                        marginTop: 8, padding: '10px 14px', borderRadius: 8,
-                        background: 'var(--brand-light)', border: '1px solid var(--brand-border)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                      }}>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)' }}>{court.name}</div>
-                          <div style={{ fontSize: '0.77rem', color: 'var(--text-muted)', marginTop: 2 }}>{addr}</div>
-                        </div>
-                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-                          style={{
-                            flexShrink: 0, fontSize: '0.78rem', fontWeight: 600,
-                            color: 'var(--brand)', textDecoration: 'none',
-                            padding: '5px 12px', border: '1px solid var(--brand-border)',
-                            borderRadius: 6, background: 'var(--bg-surface)',
-                          }}>Xem Maps ↗</a>
-                      </div>
-                    );
-                  })()}
-
                   {/* Sân không có trong DB: hiện input địa chỉ tự nhập */}
                   {!form.court_id && form.court_name && (
                     <input
@@ -488,7 +461,7 @@ export default function CreateMatchPage() {
                                     set('slot_categories', next);
                                   }}
                                 >
-                                  {['Tất cả trình độ', 'Mới chơi', 'Yếu', 'Trung bình yếu', 'Trung bình', 'Trung bình khá', 'Khá'].map(s => (
+                                  {['Mới chơi', 'Yếu', 'Trung bình yếu', 'Trung bình', 'Trung bình khá', 'Khá'].map(s => (
                                     <option key={s} value={s}>{s}</option>
                                   ))}
                                 </select>

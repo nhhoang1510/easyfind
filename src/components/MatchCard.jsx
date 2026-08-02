@@ -104,6 +104,17 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
             {match.shuttlecock || 'Ba Sao'}
           </span>
         </div>
+
+        {/* Note of host */}
+        {match.note && (
+          <div style={{
+            fontSize: '0.78rem', color: '#D97706', background: '#FEF3C7',
+            padding: '4px 8px', borderRadius: 6, marginTop: 6, border: '1px solid #FDE68A',
+            display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500
+          }}>
+            💬 <i>"{match.note}"</i>
+          </div>
+        )}
       </div>
 
       {/* ── RIGHT: Slot status + CTA + Maps ── */}
