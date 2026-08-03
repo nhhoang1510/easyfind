@@ -136,32 +136,88 @@ export const HCM_DISTRICTS = [
 ];
 export const DN_DISTRICTS = ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu'];
 
+/** Helper to format price to '60k', '45k' format */
+function fmtK(val) {
+  if (!val && val !== 0) return '0k';
+  const num = parseInt(String(val).replace(/\D/g, ''), 10);
+  if (isNaN(num)) return String(val);
+  if (num >= 1000) return `${Math.round(num / 1000)}k`;
+  return `${num}k`;
+}
+
+/** Helper to format date as '30/7' or '2/8' */
+function fmtShortDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) {
+    return `${d.getDate()}/${d.getMonth() + 1}`;
+  }
+  const match = String(dateStr).match(/(\d{1,2})\/(\d{1,2})/);
+  if (match) return `${match[1]}/${match[2]}`;
+  return dateStr;
+}
+
 /** Format match details as Zalo post text */
 export function formatZaloMatchPost(match) {
   if (!match) return '';
-  const participants = (match.participants || []).filter(p => p.status === 'confirmed');
-  const playerList = participants.map((p, i) => `   ${i + 1}. ${p.player_name}`).join('\n');
-  const categoriesText = match.slot_categories && match.slot_categories.length > 0
-    ? match.slot_categories.map(c => `   - ${c.gender === 'female' ? '♀ Nữ' : '♂ Nam'} (${c.skill_level}): ${c.slots} suất – ${fmtCurrency(c.cost)}`).join('\n')
-    : `   - Chi phí: ${fmtCurrency(match.cost_per_slot)} / người`;
+
+  const title = match.title ? match.title.toUpperCase() : 'TUYỂN GIAO LƯU CẦU LÔNG';
+  const court = `${match.court_name || match.court || ''}${match.court_number ? ` (${match.court_number})` : ''}`;
+  const dateStr = fmtShortDate(match.play_date);
+  const timeStr = `${match.start_time || ''}-${match.end_time || ''}`;
+  const shuttle = match.shuttlecock || 'Ba Sao';
+
+  // Fee lines
+  let feeSection = '';
+  if (Array.isArray(match.slot_categories) && match.slot_categories.length > 0) {
+    const feeLines = match.slot_categories.map((c, i) => {
+      const genderLabel = c.gender === 'female' ? 'nữ' : 'nam';
+      const costStr = fmtK(c.cost);
+      if (i === 0) {
+        return `Phí:   ${genderLabel} ${costStr}`;
+      }
+      return `        ${genderLabel} ${costStr}${i === match.slot_categories.length - 1 ? ` -  Cầu ${shuttle}` : ''}`;
+    });
+    if (match.slot_categories.length === 1) {
+      feeLines[0] += ` -  Cầu ${shuttle}`;
+    }
+    feeSection = feeLines.join('\n');
+  } else {
+    const costStr = fmtK(match.cost_per_slot);
+    feeSection = `Phí:   ${costStr} -  Cầu ${shuttle}`;
+  }
+
+  // Skill lines
+  let skillSection = '';
+  if (Array.isArray(match.slot_categories) && match.slot_categories.length > 0) {
+    const skillLines = match.slot_categories.map((c, i) => {
+      const genderLabel = c.gender === 'female' ? 'Nữ' : 'Nam';
+      const prefix = i === 0 ? 'Trình :   ' : '        ';
+      return `${prefix}${c.skill_level} ( ${genderLabel} )`;
+    });
+    skillSection = skillLines.join('\n');
+  } else {
+    skillSection = `Trình :   ${match.skill_level || 'Mọi trình độ'}`;
+  }
+
+  const phoneStr = match.host_phone ? ` or Zl ${match.host_phone}` : '';
+  const noteStr = match.note ? `  - ${match.note}` : '';
 
   return [
-    `🎾 KÈO CẦU LÔNG: ${match.court_name ? match.court_name.toUpperCase() : ''}`,
+    title,
     ``,
-    `📍 Sân: ${match.court_name || ''} ${match.court_number ? `(${match.court_number})` : ''} (${match.district || ''})`,
-    `📞 Host: ${match.host_name || ''} ${match.host_phone ? `- SĐT: ${match.host_phone}` : ''}`,
-    `📅 Ngày: ${fmtDate(match.play_date)}`,
-    `⏰ Thời gian: ${fmtTime(match.start_time)} – ${fmtTime(match.end_time)}`,
-    `👥 Slot: ${participants.length}/${match.max_slots} suất`,
-    `💰 Phân bổ suất & Chi phí:`,
-    categoriesText,
-    `🏸 Loại cầu: ${match.shuttlecock || 'Ba Sao'}`,
+    court,
     ``,
-    `Danh sách tham gia:`,
-    playerList || '   (Chưa có ai đăng ký)',
+    `Ca giờ :  ${timeStr}  (Ngày ${dateStr})`,
     ``,
-    match.note ? `Ghi chú: ${match.note}` : '',
-    match.bank_account ? `🏦 Chuyển khoản cọc: ${match.bank_name || ''} - ${match.bank_account} (${match.bank_owner || ''})` : '',
-  ].filter(Boolean).join('\n');
+    feeSection,
+    ``,
+    `Sân max:  ${match.max_slots || 8} slot${noteStr}`,
+    ``,
+    skillSection,
+    ``,
+    `Đky liên hệ trực tiếp${phoneStr}`,
+    `@All`,
+  ].join('\n');
 }
 
