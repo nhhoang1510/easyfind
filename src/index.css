@@ -1141,7 +1141,7 @@ body {
   height: 56px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: sticky;
   top: 0;
   z-index: 200;

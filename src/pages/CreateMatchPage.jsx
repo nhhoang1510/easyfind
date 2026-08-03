@@ -121,12 +121,6 @@ export default function CreateMatchPage() {
       </div>
 
       <div className="create-page-body">
-        {/* Header */}
-        <div className="create-page-header">
-          <h1 className="create-page-title">Tạo Kèo Mới</h1>
-          <p className="create-page-sub">Nhập thông tin sân, giờ đánh và số lượng để tuyển quân ngay!</p>
-        </div>
-
         {/* Card */}
         <div className="create-card">
           {msg && (
