@@ -365,7 +365,7 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                       ['🏸', 'Tiêu đề', form.title],
                       [<MapPin key="mappin" size={14} style={{ color: '#5B7A99' }} />, 'Sân', form.court_name || 'Chưa chọn sân'],
                       ['🏟️', 'Số sân', form.court_number],
-                      ['📌', 'Địa điểm', `${form.district || ''} ${form.city}`],
+                      [<MapPin key="location" size={14} style={{ color: '#5B7A99' }} />, 'Địa điểm', `${form.district || ''} ${form.city}`],
                       ['📅', 'Ngày', form.play_date],
                       ['⏰', 'Giờ', `${form.start_time} – ${form.end_time}`],
                       ['👥', 'Số người', form.max_slots + ' suất'],
