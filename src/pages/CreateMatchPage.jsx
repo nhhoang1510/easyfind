@@ -11,11 +11,15 @@ import { MapPin } from 'lucide-react';
 const districtMap = { 'Hà Nội': HN_DISTRICTS, 'TP.HCM': HCM_DISTRICTS, 'Đà Nẵng': DN_DISTRICTS };
 
 const defaultForm = {
-  title: '', host_name: '', host_phone: '', court_name: '', court_id: '',
+  title: '', host_name: '', host_phone: '', court_name: '', court_id: '', court_number: '',
   city: 'Hà Nội', district: '', play_date: '', start_time: '', end_time: '',
-  max_slots: 10, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
+  max_slots: 5, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
   skill_levels: ['Tất cả trình độ'], note: '', booking_proof: '',
   bank_name: '', bank_account: '', bank_owner: '',
+  slot_categories: [
+    { id: '1', gender: 'male', skill_level: 'Trung bình', slots: 3, cost: 70000 },
+    { id: '2', gender: 'female', skill_level: 'Mới chơi', slots: 2, cost: 30000 },
+  ],
 };
 
 const STEPS = [
@@ -327,64 +331,15 @@ export default function CreateMatchPage() {
                   </div>
                 </div>
 
-                {/* ── Suất & Giá Tiền ── */}
+                {/* ── Suất & Giá Tiền Chi Tiết (Phân bổ Theo Nhóm) ── */}
                 <div className="form-group" style={{ background: 'var(--bg-subtle)', padding: 14, borderRadius: 10, border: '1px solid var(--border-color)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', gap: 4, background: 'var(--bg-surface)', padding: 3, borderRadius: 6, border: '1px solid var(--border-color)', width: '100%' }}>
-                      <button
-                        type="button"
-                        onClick={() => set('enable_categories', false)}
-                        style={{
-                          flex: 1, padding: '6px 12px', fontSize: '0.82rem', fontWeight: 700, borderRadius: 4, border: 'none',
-                          background: !form.enable_categories ? 'var(--brand)' : 'transparent',
-                          color: !form.enable_categories ? '#fff' : 'var(--text-muted)', cursor: 'pointer'
-                        }}
-                      >
-                        Chung
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          set('enable_categories', true);
-                          if (!form.slot_categories || form.slot_categories.length === 0) {
-                            set('slot_categories', [
-                              { id: '1', gender: 'male', skill_level: 'Trung bình', slots: 3, cost: 70000 },
-                              { id: '2', gender: 'female', skill_level: 'Mới chơi', slots: 2, cost: 30000 },
-                            ]);
-                          }
-                        }}
-                        style={{
-                          flex: 1, padding: '6px 12px', fontSize: '0.82rem', fontWeight: 700, borderRadius: 4, border: 'none',
-                          background: form.enable_categories ? 'var(--brand)' : 'transparent',
-                          color: form.enable_categories ? '#fff' : 'var(--text-muted)', cursor: 'pointer'
-                        }}
-                      >
-                        Riêng (Nam/Nữ)
-                      </button>
-                    </div>
+                  <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: 12 }}>
+                    🎯 CẤU HÌNH PHÂN BỔ NHÓM SUẤT & CHI PHÍ
                   </div>
 
-                  {!form.enable_categories ? (
-                    /* ── Chế độ 1: Tuyển chung ── */
-                    <div className="auth-grid-2">
-                      <div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>SỐ SUẤT TỐI ĐA</span>
-                        <input type="number" className="form-input" required min={2} max={50} step={1}
-                          value={form.max_slots}
-                          onChange={e => set('max_slots', Math.round(Math.abs(parseInt(e.target.value) || 2)))}
-                          onKeyDown={e => ['.', ',', 'e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} />
-                      </div>
-                      <div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>GIÁ / NGƯỜI (VNĐ)</span>
-                        <input type="number" className="form-input" required min={0} step={5000}
-                          value={form.cost_per_slot} onChange={e => set('cost_per_slot', e.target.value)} />
-                      </div>
-                    </div>
-                  ) : (
-                    /* ── Chế độ 2: Tuyển Nam / Nữ riêng ── */
-                    <div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-                        {(form.slot_categories || []).map((cat, idx) => (
+                  <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
+                      {(form.slot_categories || []).map((cat, idx) => (
                           <div key={cat.id || idx} style={{
                             background: 'var(--bg-surface)', padding: '12px', borderRadius: 8, border: '1px solid var(--border-color)',
                             position: 'relative', display: 'flex', flexDirection: 'column', gap: 8
@@ -523,56 +478,8 @@ export default function CreateMatchPage() {
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-
-                {/* ── Chỉ hiển thị Chọn Trình Độ Yêu Cầu chung khi ở chế độ Đồng Giá Chung ── */}
-                {!form.enable_categories && (
-                  <div className="form-group">
-                    <label className="form-label">TRÌNH ĐỘ YÊU CẦU <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>(chọn nhiều)</span></label>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-                      {['Tất cả trình độ', ...SKILL_LEVELS].map(s => {
-                        const isAll = s === 'Tất cả trình độ';
-                        const checked = (form.skill_levels || []).includes(s);
-                        return (
-                          <label
-                            key={s}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: 6,
-                              padding: '6px 14px', borderRadius: 100, fontSize: '0.8rem', fontWeight: 600,
-                              border: checked ? '1px solid var(--brand)' : '1px solid var(--border-color)',
-                              background: checked ? 'var(--brand-light)' : 'var(--bg-surface)',
-                              color: checked ? 'var(--brand)' : 'var(--text-sub)', cursor: 'pointer',
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              style={{ accentColor: 'var(--brand)', width: 14, height: 14, cursor: 'pointer' }}
-                              onChange={() => {
-                                if (isAll) {
-                                  set('skill_levels', ['Tất cả trình độ']);
-                                } else {
-                                  setForm(f => {
-                                    let next = (f.skill_levels || []).filter(x => x !== 'Tất cả trình độ');
-                                    if (next.includes(s)) {
-                                      next = next.filter(x => x !== s);
-                                    } else {
-                                      next = [...next, s];
-                                    }
-                                    return { ...f, skill_levels: next.length ? next : ['Tất cả trình độ'] };
-                                  });
-                                }
-                              }}
-                            />
-                            {s}
-                          </label>
-                        );
-                      })}
-                    </div>
                   </div>
-                )}
+                </div>
                 <div className="form-group">
                   <label className="form-label">LOẠI CẦU</label>
                   <select className="form-select"
@@ -612,7 +519,6 @@ export default function CreateMatchPage() {
                   <textarea className="form-input" rows={2} placeholder="Thông tin thêm về kèo, yêu cầu đặc biệt..."
                     value={form.note} onChange={e => set('note', e.target.value)} style={{ resize: 'vertical' }} />
                 </div>
-              </div>
 
               {/* Submit button */}
               <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>

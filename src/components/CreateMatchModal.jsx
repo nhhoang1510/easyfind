@@ -8,11 +8,15 @@ import { MapPin } from 'lucide-react';
 const districtMap = { 'Hà Nội': HN_DISTRICTS, 'TP.HCM': HCM_DISTRICTS, 'Đà Nẵng': DN_DISTRICTS };
 
 const defaultForm = {
-  title: '', host_name: '', host_phone: '', court_name: '', court_id: '',
+  title: '', host_name: '', host_phone: '', court_name: '', court_id: '', court_number: '',
   city: 'Hà Nội', district: '', play_date: '', start_time: '', end_time: '',
-  max_slots: 10, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
+  max_slots: 5, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
   skill_levels: ['Tất cả trình độ'], note: '', booking_proof: '',
   bank_name: '', bank_account: '', bank_owner: '',
+  slot_categories: [
+    { id: '1', gender: 'male', skill_level: 'Trung bình', slots: 3, cost: 70000 },
+    { id: '2', gender: 'female', skill_level: 'Mới chơi', slots: 2, cost: 30000 },
+  ],
 };
 
 export default function CreateMatchModal({ onClose, onCreated }) {
@@ -183,14 +187,10 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                     <input id="create-date" className="form-input" type="date" required value={form.play_date} onChange={e => set('play_date', e.target.value)} min={new Date().toISOString().split('T')[0]} />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Số suất (người) <span>*</span></label>
-                    <input
-                      id="create-max-slots" className="form-input" type="number"
-                      min={2} max={50} step={1} required
-                      value={form.max_slots}
-                      onChange={e => set('max_slots', Math.round(Math.abs(parseInt(e.target.value) || 2)))}
-                      onKeyDown={e => ['.', ',', 'e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
-                    />
+                    <label className="form-label">Loại cầu</label>
+                    <select id="create-shuttle" className="form-select" value={form.shuttlecock} onChange={e => set('shuttlecock', e.target.value)}>
+                      {SHUTTLECOCKS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </div>
                 </div>
 
@@ -215,17 +215,138 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                   </div>
                 </div>
 
-                <div className="grid-2">
-                  <div className="form-group">
-                    <label className="form-label">Chi phí / người (VNĐ)</label>
-                    <input id="create-cost" className="form-input" type="number" min={0} step={5000} value={form.cost_per_slot} onChange={e => set('cost_per_slot', e.target.value)} placeholder="60000" />
+                {/* ── Cấu hình Phân bổ Nhóm Suất & Chi Phí ── */}
+                <div className="form-group" style={{ background: 'rgba(255,255,255,0.03)', padding: 14, borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#9DB4CC', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    🎯 PHÂN BỔ NHÓM SUẤT & CHI PHÍ
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Loại cầu</label>
-                    <select id="create-shuttle" className="form-select" value={form.shuttlecock} onChange={e => set('shuttlecock', e.target.value)}>
-                      {SHUTTLECOCKS.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
+                    {(form.slot_categories || []).map((cat, idx) => (
+                      <div key={cat.id || idx} style={{
+                        background: 'rgba(255,255,255,0.04)', padding: '12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)',
+                        position: 'relative', display: 'flex', flexDirection: 'column', gap: 8
+                      }}>
+                        {/* Nút xóa nhóm */}
+                        <button type="button" onClick={() => {
+                          const next = form.slot_categories.filter((_, i) => i !== idx);
+                          set('slot_categories', next);
+                          const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
+                          set('max_slots', total || 1);
+                        }}
+                          style={{
+                            position: 'absolute', right: 8, top: 8, background: '#FEF2F2', border: '1px solid #FECACA',
+                            color: '#EF4444', width: 24, height: 24, borderRadius: '50%', display: 'flex',
+                            alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', cursor: 'pointer'
+                          }}
+                        >✕</button>
+
+                        {/* Hàng 1: Đối tượng */}
+                        <div>
+                          <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 2, textTransform: 'uppercase' }}>ĐỐI TƯỢNG</span>
+                          <select className="form-select" style={{ padding: '6px 8px', fontSize: '0.82rem', fontWeight: 600 }}
+                            value={cat.gender}
+                            onChange={e => {
+                              const next = [...form.slot_categories];
+                              next[idx].gender = e.target.value;
+                              set('slot_categories', next);
+                            }}
+                          >
+                            <option value="male">♂ Nam</option>
+                            <option value="female">♀ Nữ</option>
+                            <option value="mixed">👫 Nam & Nữ</option>
+                          </select>
+                        </div>
+
+                        {/* Trình độ (cho phép chọn nhiều) */}
+                        <div>
+                          <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>TRÌNH ĐỘ (CHỌN NHIỀU)</span>
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            {['Mới chơi', 'Yếu', 'TB yếu', 'Trung bình', 'TB khá', 'Khá'].map(s => {
+                              const levels = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);
+                              const isSelected = levels.includes(s) || cat.skill_level === s;
+                              return (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onClick={() => {
+                                    let current = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);
+                                    if (current.includes(s)) {
+                                      current = current.filter(x => x !== s);
+                                    } else {
+                                      current.push(s);
+                                    }
+                                    const newSkillStr = current.length > 0 ? current.join(', ') : 'Trung bình';
+                                    const next = [...form.slot_categories];
+                                    next[idx].skill_level = newSkillStr;
+                                    set('slot_categories', next);
+                                  }}
+                                  style={{
+                                    padding: '3px 8px', borderRadius: 100, fontSize: '0.73rem', fontWeight: 600,
+                                    border: isSelected ? '1px solid #00F5C4' : '1px solid rgba(255,255,255,0.12)',
+                                    background: isSelected ? 'rgba(0,245,196,0.12)' : 'rgba(255,255,255,0.04)',
+                                    color: isSelected ? '#00F5C4' : '#9DB4CC', cursor: 'pointer',
+                                    transition: 'all 0.12s'
+                                  }}
+                                >
+                                  {isSelected ? '✓ ' : ''}{s}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Hàng 2: Số lượng & Giá/người */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 8 }}>
+                          <div>
+                            <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 2, textTransform: 'uppercase' }}>SỐ LƯỢNG</span>
+                            <input type="number" className="form-input" min={1} max={30} style={{ padding: '6px 8px', fontSize: '0.85rem', fontWeight: 700 }}
+                              value={cat.slots}
+                              onChange={e => {
+                                const next = [...form.slot_categories];
+                                next[idx].slots = Math.max(1, parseInt(e.target.value) || 1);
+                                set('slot_categories', next);
+                                const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
+                                set('max_slots', total);
+                              }}
+                            />
+                          </div>
+
+                          <div>
+                            <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 2, textTransform: 'uppercase' }}>GIÁ / NGƯỜI</span>
+                            <input type="number" className="form-input" step={5000} min={0} style={{ padding: '6px 8px', fontSize: '0.85rem', fontWeight: 700 }}
+                              value={cat.cost}
+                              onChange={e => {
+                                const next = [...form.slot_categories];
+                                next[idx].cost = parseFloat(e.target.value) || 0;
+                                set('slot_categories', next);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = [
+                        ...(form.slot_categories || []),
+                        { id: Date.now().toString(), gender: 'female', skill_level: 'Mới chơi', slots: 2, cost: 30000 }
+                      ];
+                      set('slot_categories', next);
+                      const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
+                      set('max_slots', total);
+                    }}
+                    style={{
+                      width: '100%', padding: '9px', fontSize: '0.82rem', fontWeight: 600,
+                      background: 'rgba(0,245,196,0.06)', border: '1px dashed #00F5C4',
+                      color: '#00F5C4', borderRadius: 8, cursor: 'pointer'
+                    }}
+                  >
+                    + Thêm nhóm suất Nam/Nữ
+                  </button>
                 </div>
 
                 <div className="form-group">
