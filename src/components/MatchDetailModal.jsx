@@ -170,8 +170,8 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
         {/* Tab switcher */}
         <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
           {[
-            { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots}) & ẢNH ĐẶT SÂN` },
-            { id: 'info', label: 'THÔNG TIN KÈO' },
+            { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots})` },
+            { id: 'info', label: 'THÔNG TIN KÈO & ẢNH SÂN' },
             { id: 'join', label: isFull ? 'ĐĂNG KÝ DỰ BỊ' : 'ĐĂNG KÝ THAM GIA' },
           ].map(t => (
             <button
@@ -273,6 +273,30 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
                     </div>
                   )}
 
+                  {/* MINH CHỨNG ĐẶT SÂN DO HOST CUNG CẤP */}
+                  <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: 14 }}>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>🧾 MINH CHỨNG ĐẶT SÂN (HOST CUNG CẤP)</span>
+                    </div>
+                    {match.booking_proof ? (
+                      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: 12, textAlign: 'center' }}>
+                        <img
+                          src={match.booking_proof}
+                          alt="Minh chứng đặt sân"
+                          style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 6, cursor: 'pointer', objectFit: 'contain' }}
+                          onClick={() => window.open(match.booking_proof, '_blank')}
+                        />
+                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: 6 }}>
+                          🔍 Click vào ảnh để mở xem ảnh kích thước đầy đủ
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '14px 16px', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: 8, color: '#64748B', fontSize: '0.84rem' }}>
+                        ℹ️ Host chưa tải lên hình ảnh minh chứng đặt sân cho kèo này.
+                      </div>
+                    )}
+                  </div>
+
                   <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                     <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setTab('join')}>
                       {isFull ? 'ĐĂNG KÝ DỰ BỊ' : 'ỨNG TUYỂN / ĐĂNG KÝ NGAY'}
@@ -369,30 +393,6 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
                       })}
                     </>
                   )}
-
-                  {/* MINH CHỨNG ĐẶT SÂN DO HOST CUNG CẤP */}
-                  <div style={{ marginTop: 20, borderTop: '1px solid #E2E8F0', paddingTop: 16 }}>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span>🧾 MINH CHỨNG ĐẶT SÂN (HOST CUNG CẤP)</span>
-                    </div>
-                    {match.booking_proof ? (
-                      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: 12, textAlign: 'center' }}>
-                        <img
-                          src={match.booking_proof}
-                          alt="Minh chứng đặt sân"
-                          style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 6, cursor: 'pointer', objectFit: 'contain' }}
-                          onClick={() => window.open(match.booking_proof, '_blank')}
-                        />
-                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: 6 }}>
-                          🔍 Click vào ảnh để mở xem ảnh kích thước đầy đủ
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ padding: '14px 16px', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: 8, color: '#64748B', fontSize: '0.84rem' }}>
-                        ℹ️ Host chưa tải lên hình ảnh minh chứng đặt sân cho kèo này.
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
 
