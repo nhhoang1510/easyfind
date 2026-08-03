@@ -256,19 +256,8 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
               {/* TAB 2: PLAYERS LIST */}
               {tab === 'players' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      DANH SÁCH CHÍNH THỨC ({confirmed.length}/{match.max_slots})
-                    </div>
-                    {isHost ? (
-                      <span style={{ fontSize: '0.72rem', color: '#059669', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
-                        👁️ SĐT đầy đủ (Quyền Host)
-                      </span>
-                    ) : (
-                      <span style={{ fontSize: '0.72rem', color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 4 }}>
-                        🔒 SĐT đã được che bảo mật
-                      </span>
-                    )}
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+                    DANH SÁCH CHÍNH THỨC ({confirmed.length}/{match.max_slots})
                   </div>
 
                   {confirmed.length === 0 ? (
@@ -276,39 +265,37 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
                       Chưa có người chơi nào đăng ký. Hãy là người đầu tiên!
                     </div>
                   ) : (
-                    confirmed.map((p, idx) => {
-                      const showFullPhone = isHost || (user && p.user_id === user.id);
-                      const phoneText = p.player_phone
-                        ? (showFullPhone ? p.player_phone : fmtPhone(p.player_phone))
-                        : 'Chưa có SĐT';
-
-                      return (
-                        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#475569', width: 20 }}>#{idx + 1}</span>
-                            <div>
-                              <strong style={{ fontSize: '0.9rem', color: '#0F172A' }}>{p.player_name}</strong>
-                              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                                SĐT: <span style={{ fontWeight: showFullPhone ? 700 : 400, color: showFullPhone ? '#0F172A' : '#64748B' }}>{phoneText}</span> · {p.skill_level}
-                              </div>
+                    confirmed.map((p, idx) => (
+                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#475569', width: 20 }}>#{idx + 1}</span>
+                          <div>
+                            <strong style={{ fontSize: '0.9rem', color: '#0F172A' }}>{p.player_name}</strong>
+                            <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: 1 }}>
+                              <span>{p.gender === 'female' ? 'Nữ' : 'Nam'}</span> · <span>{p.skill_level || 'Trung bình'}</span>
+                              {isHost && p.player_phone && (
+                                <span style={{ color: 'var(--brand)', fontWeight: 600, marginLeft: 8 }}>
+                                  📞 {p.player_phone}
+                                </span>
+                              )}
                             </div>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <span style={{
-                              padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700,
-                              background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0'
-                            }}>
-                              XÁC NHẬN
-                            </span>
-                            {isHost && (
-                              <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
-                                Hủy slot
-                              </button>
-                            )}
-                          </div>
                         </div>
-                      );
-                    })
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{
+                            padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700,
+                            background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0'
+                          }}>
+                            XÁC NHẬN
+                          </span>
+                          {isHost && (
+                            <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
+                              Hủy slot
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
                   )}
 
                   {waitlisted.length > 0 && (
@@ -316,26 +303,26 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 14, marginBottom: 4 }}>
                         DANH SÁCH DỰ BỊ ({waitlisted.length})
                       </div>
-                      {waitlisted.map((p, idx) => {
-                        const showFullPhone = isHost || (user && p.user_id === user.id);
-                        const phoneText = p.player_phone
-                          ? (showFullPhone ? p.player_phone : fmtPhone(p.player_phone))
-                          : 'Chưa có SĐT';
-
-                        return (
-                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px dashed #E2E8F0', background: '#F8FAFC' }}>
-                            <div>
-                              <strong style={{ fontSize: '0.88rem', color: '#334155' }}>Dự bị #{idx + 1}: {p.player_name}</strong>
-                              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>SĐT: {phoneText}</div>
+                      {waitlisted.map((p, idx) => (
+                        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px dashed #E2E8F0', background: '#F8FAFC' }}>
+                          <div>
+                            <strong style={{ fontSize: '0.88rem', color: '#334155' }}>Dự bị #{idx + 1}: {p.player_name}</strong>
+                            <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: 1 }}>
+                              <span>{p.gender === 'female' ? 'Nữ' : 'Nam'}</span> · <span>{p.skill_level || 'Trung bình'}</span>
+                              {isHost && p.player_phone && (
+                                <span style={{ color: 'var(--brand)', fontWeight: 600, marginLeft: 8 }}>
+                                  📞 {p.player_phone}
+                                </span>
+                              )}
                             </div>
-                            {isHost && (
-                              <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
-                                Xóa
-                              </button>
-                            )}
                           </div>
-                        );
-                      })}
+                          {isHost && (
+                            <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
+                              Xóa
+                            </button>
+                          )}
+                        </div>
+                      ))}
                     </>
                   )}
                 </div>
