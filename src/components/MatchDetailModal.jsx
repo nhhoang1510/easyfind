@@ -8,6 +8,7 @@ import {
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import AIForensicReport from './AIForensicReport';
+import { MapPin } from 'lucide-react';
 
 export default function MatchDetailModal({ match: initMatch, initialTab = 'players', onClose, onUpdate, onShowAuth }) {
   const { user } = useAuth();
@@ -153,8 +154,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
         {/* Modal Header */}
         <div className="modal-header">
           <div style={{ minWidth: 0, paddingRight: 16 }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E11D48', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>
-              📍 {match.court_name} – {match.district}
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E11D48', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <MapPin size={14} style={{ flexShrink: 0 }} />
+              <span>{match.court_name} – {match.district}</span>
             </div>
             <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
               Chi tiết danh sách & Đăng ký
@@ -168,8 +170,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
         {/* Tab switcher */}
         <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
           {[
-            { id: 'players', label: `DANH SÁCH THAM GIA (${confirmed.length}/${match.max_slots})` },
-            { id: 'copy', label: 'COPY BÀI ZALO' },
+            { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots}) & ẢNH ĐẶT SÂN` },
+            { id: 'info', label: 'THÔNG TIN KÈO' },
+            { id: 'join', label: isFull ? 'ĐĂNG KÝ DỰ BỊ' : 'ĐĂNG KÝ THAM GIA' },
           ].map(t => (
             <button
               key={t.id}
@@ -177,7 +180,7 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
               style={{
                 flex: 1,
                 padding: '12px 8px',
-                fontSize: '0.82rem',
+                fontSize: '0.8rem',
                 fontWeight: 700,
                 border: 'none',
                 borderBottom: tab === t.id ? '2px solid var(--brand)' : '2px solid transparent',
@@ -220,11 +223,15 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
                     <div>
                       <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Host tổ chức</div>
                       <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>{match.host_name}</div>
-                      {match.host_phone && <div style={{ fontSize: '0.84rem', color: '#475569', marginTop: 1 }}>SĐT: {fmtPhone(match.host_phone)}</div>}
+                      <div style={{ fontSize: '0.88rem', color: 'var(--brand)', fontWeight: 700, marginTop: 2 }}>
+                        📞 SĐT Host: {match.host_phone || 'Chưa cập nhật'}
+                      </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Tên sân</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>{match.court_name}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Tên sân & Số sân</div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>
+                        {match.court_name} {match.court_number && <span style={{ color: 'var(--brand)', fontWeight: 800 }}>({match.court_number})</span>}
+                      </div>
                     </div>
                     <div>
                       <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Ngày & Thời gian</div>
@@ -280,38 +287,59 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
               {/* TAB 2: PLAYERS LIST */}
               {tab === 'players' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
-                    DANH SÁCH CHÍNH THỨC ({confirmed.length}/{match.max_slots})
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      DANH SÁCH CHÍNH THỨC ({confirmed.length}/{match.max_slots})
+                    </div>
+                    {isHost ? (
+                      <span style={{ fontSize: '0.72rem', color: '#059669', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
+                        👁️ SĐT đầy đủ (Quyền Host)
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '0.72rem', color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 4 }}>
+                        🔒 SĐT đã được che bảo mật
+                      </span>
+                    )}
                   </div>
+
                   {confirmed.length === 0 ? (
                     <div style={{ padding: '24px 0', color: '#64748B', textAlign: 'center', fontSize: '0.88rem' }}>
                       Chưa có người chơi nào đăng ký. Hãy là người đầu tiên!
                     </div>
                   ) : (
-                    confirmed.map((p, idx) => (
-                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#475569', width: 20 }}>#{idx + 1}</span>
-                          <div>
-                            <strong style={{ fontSize: '0.9rem', color: '#0F172A' }}>{p.player_name}</strong>
-                            <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{p.player_phone || 'Chưa có SĐT'} · {p.skill_level}</div>
+                    confirmed.map((p, idx) => {
+                      const showFullPhone = isHost || (user && p.user_id === user.id);
+                      const phoneText = p.player_phone
+                        ? (showFullPhone ? p.player_phone : fmtPhone(p.player_phone))
+                        : 'Chưa có SĐT';
+
+                      return (
+                        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#475569', width: 20 }}>#{idx + 1}</span>
+                            <div>
+                              <strong style={{ fontSize: '0.9rem', color: '#0F172A' }}>{p.player_name}</strong>
+                              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                                SĐT: <span style={{ fontWeight: showFullPhone ? 700 : 400, color: showFullPhone ? '#0F172A' : '#64748B' }}>{phoneText}</span> · {p.skill_level}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span style={{
+                              padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700,
+                              background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0'
+                            }}>
+                              XÁC NHẬN
+                            </span>
+                            {isHost && (
+                              <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
+                                Hủy slot
+                              </button>
+                            )}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <span style={{
-                            padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700,
-                            background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0'
-                          }}>
-                            XÁC NHẬN
-                          </span>
-                          {isHost && (
-                            <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
-                              Hủy slot
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
 
                   {waitlisted.length > 0 && (
@@ -319,21 +347,52 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 14, marginBottom: 4 }}>
                         DANH SÁCH DỰ BỊ ({waitlisted.length})
                       </div>
-                      {waitlisted.map((p, idx) => (
-                        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px dashed #E2E8F0', background: '#F8FAFC' }}>
-                          <div>
-                            <strong style={{ fontSize: '0.88rem', color: '#334155' }}>Dự bị #{idx + 1}: {p.player_name}</strong>
-                            <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{p.player_phone}</div>
+                      {waitlisted.map((p, idx) => {
+                        const showFullPhone = isHost || (user && p.user_id === user.id);
+                        const phoneText = p.player_phone
+                          ? (showFullPhone ? p.player_phone : fmtPhone(p.player_phone))
+                          : 'Chưa có SĐT';
+
+                        return (
+                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px dashed #E2E8F0', background: '#F8FAFC' }}>
+                            <div>
+                              <strong style={{ fontSize: '0.88rem', color: '#334155' }}>Dự bị #{idx + 1}: {p.player_name}</strong>
+                              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>SĐT: {phoneText}</div>
+                            </div>
+                            {isHost && (
+                              <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
+                                Xóa
+                              </button>
+                            )}
                           </div>
-                          {isHost && (
-                            <button onClick={() => handleCancel(p.id)} style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
-                              Xóa
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </>
                   )}
+
+                  {/* MINH CHỨNG ĐẶT SÂN DO HOST CUNG CẤP */}
+                  <div style={{ marginTop: 20, borderTop: '1px solid #E2E8F0', paddingTop: 16 }}>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>🧾 MINH CHỨNG ĐẶT SÂN (HOST CUNG CẤP)</span>
+                    </div>
+                    {match.booking_proof ? (
+                      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: 12, textAlign: 'center' }}>
+                        <img
+                          src={match.booking_proof}
+                          alt="Minh chứng đặt sân"
+                          style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 6, cursor: 'pointer', objectFit: 'contain' }}
+                          onClick={() => window.open(match.booking_proof, '_blank')}
+                        />
+                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: 6 }}>
+                          🔍 Click vào ảnh để mở xem ảnh kích thước đầy đủ
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '14px 16px', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: 8, color: '#64748B', fontSize: '0.84rem' }}>
+                        ℹ️ Host chưa tải lên hình ảnh minh chứng đặt sân cho kèo này.
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -386,20 +445,6 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
                     </button>
                   </form>
                 )
-              )}
-
-
-
-              {/* TAB 5: COPY ZALO */}
-              {tab === 'copy' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <p style={{ fontSize: '0.84rem', color: '#64748B' }}>
-                    Sao chép bài đăng định dạng chuẩn để dán trực tiếp vào nhóm Zalo/Facebook:
-                  </p>
-                  <button className="btn btn-primary" onClick={copyMatchText} style={{ justifyContent: 'center' }}>
-                    {copyDone ? 'ĐÃ SAO CHÉP VÀO CLIPBOARD!' : 'SAO CHÉP NỘI DUNG BÀI ĐĂNG'}
-                  </button>
-                </div>
               )}
             </>
           )}

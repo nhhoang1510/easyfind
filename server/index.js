@@ -315,13 +315,13 @@ app.post('/api/matches', requireAuth, async (req, res) => {
     const { rows } = await pool.query(`
       INSERT INTO matches (title,host_name,host_phone,host_id,court_id,court_name,district,city,
         play_date,start_time,end_time,max_slots,cost_per_slot,slot_categories,shuttlecock,skill_level,
-        note,bank_name,bank_account,bank_owner)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING *`,
+        note,bank_name,bank_account,bank_owner,booking_proof,court_number)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING *`,
       [d.title,d.host_name,d.host_phone,d.host_id,d.court_id ? parseInt(d.court_id) : null,d.court_name,d.district,d.city||'Hà Nội',
        d.play_date,d.start_time,d.end_time,d.max_slots,d.cost_per_slot||0,
        JSON.stringify(d.slot_categories || []),
        d.shuttlecock||'Ba Sao',d.skill_level||'Tất cả trình độ',
-       d.note,d.bank_name,d.bank_account,d.bank_owner]);
+       d.note,d.bank_name,d.bank_account,d.bank_owner,d.booking_proof||null,d.court_number||null]);
     res.status(201).json(rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });

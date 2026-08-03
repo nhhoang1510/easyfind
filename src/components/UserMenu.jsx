@@ -1,12 +1,14 @@
 // src/components/UserMenu.jsx - Clean dropdown with Host verification & My Matches
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { avatarColor, avatarInitials, SKILL_LEVELS, CITIES } from '../utils/helpers';
+import { avatarColor, avatarInitials, SKILL_LEVELS, CITIES, formatZaloMatchPost, fmtDate, fmtTime } from '../utils/helpers';
+import { api } from '../api/client';
+import { MapPin } from 'lucide-react';
 
 const GENDER_LABELS = { male: 'Nam', female: 'Nữ', other: 'Khác' };
 const ROLE_LABELS = { host: 'Host', player: 'Player' };
 
-export default function UserMenu() {
+export default function UserMenu({ onSelectMatch }) {
  const { user, logout } = useAuth();
  const [open, setOpen] = useState(false);
  const [showProfile, setShowProfile] = useState(false);
@@ -23,7 +25,6 @@ export default function UserMenu() {
 
  const [bg, textCol] = avatarColor(user.full_name);
  const initials = avatarInitials(user.full_name);
- const isHost = user.role === 'host';
 
  return (
  <>
@@ -68,11 +69,11 @@ export default function UserMenu() {
        Kèo của tôi
      </button>
 
-     <div className="user-dropdown-divider" />
+     <div style={{ height: 1, background: 'var(--border-color)', margin: '4px 0' }} />
+
      <button
-       id="btn-logout"
        className="user-dropdown-item user-dropdown-item--danger"
-       onClick={() => { logout(); setOpen(false); }}
+       onClick={() => { setOpen(false); logout(); }}
      >
        Đăng xuất
      </button>
@@ -80,38 +81,45 @@ export default function UserMenu() {
  )}
  </div>
 
- {/* Các Modal bật lên */}
- {showProfile && <ProfilePanel onClose={() => setShowProfile(false)} />}
- {showMyMatches && <MyMatchesModal onClose={() => setShowMyMatches(false)} />}
+ {/* Profile Modal */}
+ {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+
+ {/* Modal Kèo của tôi */}
+ {showMyMatches && <MyMatchesModal onClose={() => setShowMyMatches(false)} onSelectMatch={onSelectMatch} />}
  </>
  );
 }
 
-/* ── Modal Hồ sơ (Tùy biến riêng cho Host để chống scam) ── */
-function ProfilePanel({ onClose }) {
- const { user, updateProfile } = useAuth();
- const isHost = user?.role === 'host';
-
+/* ── Modal Hồ sơ cá nhân (Edit Profile + Become Host) ── */
+function ProfileModal({ onClose }) {
+ const { user, updateUser } = useAuth();
  const [form, setForm] = useState({
-   full_name: user?.full_name || '',
-   phone: user?.phone || '',
-   skill_level: user?.skill_level || '',
-   city: user?.city || '',
-   gender: user?.gender || '',
-   // Trường mở rộng chống scam cho Host
-   cccd: user?.cccd || '',
-   district: user?.district || '',
+   full_name:   user?.full_name   || '',
+   phone:       user?.phone       || '',
+   gender:      user?.gender      || 'male',
+   skill_level: user?.skill_level || 'Trung bình',
+   city:        user?.city        || 'Hà Nội',
+   role:        user?.role        || 'player',
+   bank_name:   user?.bank_name   || '',
+   bank_account:user?.bank_account|| '',
+   bank_owner:  user?.bank_owner  || '',
+   cccd:        user?.cccd        || '',
+   district:    user?.district    || '',
    social_link: user?.social_link || '',
  });
  const [saving, setSaving] = useState(false);
- const [msg, setMsg] = useState(null);
+ const [msg, setMsg]       = useState(null);
 
- async function handleSave(e) {
+ const isHost = form.role === 'host';
+
+ async function handleSubmit(e) {
    e.preventDefault();
    setSaving(true); setMsg(null);
    try {
-     await updateProfile(form);
-     setMsg({ type: 'success', text: 'Đã cập nhật hồ sơ thành công!' });
+     const updated = await api.updateProfile(form);
+     updateUser(updated);
+     setMsg({ type: 'success', text: 'Cập nhật thông tin thành công!' });
+     setTimeout(() => onClose(), 1200);
    } catch (err) {
      setMsg({ type: 'error', text: err.message });
    } finally {
@@ -119,80 +127,66 @@ function ProfilePanel({ onClose }) {
    }
  }
 
- const [bg, textCol] = avatarColor(user?.full_name || '');
-
  return (
  <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-   <div className="modal-box" style={{ maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
+   <div className="modal-box" style={{ maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
      <div className="modal-header">
-       <h2 style={{ fontWeight: 700, fontSize: '1rem' }}>Hồ sơ {isHost ? 'Host (Xác thực)' : 'Người chơi'}</h2>
+       <h2 style={{ fontWeight: 700, fontSize: '1.05rem' }}>Hồ sơ cá nhân</h2>
        <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
      </div>
-     <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-       
-       {/* Avatar & info */}
-       <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 12, background: 'var(--bg-subtle)', borderRadius: 8 }}>
-         <div className="user-avatar" style={{ width: 48, height: 48, background: bg, color: textCol, fontSize: '1rem' }}>
-           {avatarInitials(user?.full_name || '')}
-         </div>
-         <div>
-           <div style={{ fontWeight: 700 }}>{user?.full_name}</div>
-           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-             @{user?.username} · {ROLE_LABELS[user?.role]}
-           </div>
-         </div>
-       </div>
-
+     <div className="modal-body">
        {msg && (
          <div style={{
-           padding: '10px 14px', fontSize: '0.85rem',
-           background: msg.type === 'success' ? 'rgba(5,150,105,0.08)' : 'rgba(225,29,72,0.08)',
-           color: msg.type === 'success' ? 'var(--accent-mint)' : 'var(--accent-primary)',
-           border: `1px solid ${msg.type === 'success' ? 'rgba(5,150,105,0.2)' : 'rgba(225,29,72,0.2)'}`,
+           padding: '8px 12px', borderRadius: 6, marginBottom: 16, fontSize: '0.84rem',
+           background: msg.type === 'success' ? '#F0FDF4' : '#FEF2F2',
+           color: msg.type === 'success' ? '#15803D' : '#B91C1C',
+           border: `1px solid ${msg.type === 'success' ? '#BBF7D0' : '#FECACA'}`,
          }}>
            {msg.text}
          </div>
        )}
 
-       <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-         {/* Giới tính */}
-         <div className="form-group">
-           <label className="form-label">Giới tính</label>
-           <div style={{ display: 'flex', gap: 8 }}>
-             {[
-               { value: 'male', label: 'Nam' },
-               { value: 'female', label: 'Nữ' },
-               { value: 'other', label: 'Khác' },
-             ].map(g => (
-               <button
-                 type="button"
-                 key={g.value}
-                 onClick={() => setForm(f => ({ ...f, gender: g.value }))}
-                 className={`filter-chip${form.gender === g.value ? ' filter-chip--active' : ''}`}
-                 style={{ flex: 1, padding: '8px 0' }}
-               >
-                 {g.label}
-               </button>
-             ))}
+       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+         {/* Role switcher */}
+         <div style={{ background: 'var(--bg-subtle)', padding: 12, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+           <label className="form-label" style={{ marginBottom: 6 }}>Loại tài khoản</label>
+           <div style={{ display: 'flex', gap: 12 }}>
+             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.88rem' }}>
+               <input type="radio" name="role" value="player" checked={form.role === 'player'} onChange={e => setForm(f => ({...f, role: e.target.value}))} />
+               <span>🏸 Player (Người chơi tìm kèo)</span>
+             </label>
+             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.88rem' }}>
+               <input type="radio" name="role" value="host" checked={form.role === 'host'} onChange={e => setForm(f => ({...f, role: e.target.value}))} />
+               <span>👑 Host (Người tổ chức & gom kèo)</span>
+             </label>
            </div>
+         </div>
+
+         <div className="form-group">
+           <label className="form-label">Họ & Tên *</label>
+           <input className="form-input" required value={form.full_name} onChange={e => setForm(f => ({...f, full_name: e.target.value}))} />
          </div>
 
          <div className="grid-2">
            <div className="form-group">
-             <label className="form-label">Họ & Tên</label>
-             <input className="form-input" value={form.full_name} onChange={e => setForm(f => ({...f, full_name: e.target.value}))} />
+             <label className="form-label">Số điện thoại *</label>
+             <input className="form-input" required placeholder="0912345678" value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} />
            </div>
            <div className="form-group">
-             <label className="form-label">Số điện thoại</label>
-             <input className="form-input" value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} />
+             <label className="form-label">Giới tính</label>
+             <select className="form-select" value={form.gender} onChange={e => setForm(f => ({...f, gender: e.target.value}))}>
+               <option value="male">Nam</option>
+               <option value="female">Nữ</option>
+               <option value="other">Khác</option>
+             </select>
            </div>
          </div>
 
-         {/* TRƯỜNG THÔNG TIN BỔ SUNG RIÊNG CHO HOST (CHỐNG SCAM) */}
+         {/* If Host: Show verification details */}
          {isHost && (
-           <div style={{ background: '#f8f9fa', padding: 12, borderRadius: 8, border: '1px solid #dadce0', display: 'flex', flexDirection: 'column', gap: 12 }}>
-             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1a73e8' }}>
-               🛡️ THÔNG TIN XÁC THỰC HOST
+           <div style={{ border: '1px solid #FDE68A', background: '#FEF3C7', padding: 14, borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+             <div style={{ fontWeight: 700, color: '#D97706', fontSize: '0.85rem' }}>
+               🔑 XÁC MINH DANH TÍNH HOST TỔ CHỨC
              </div>
              <div className="grid-2">
                <div className="form-group">
@@ -211,24 +205,6 @@ function ProfilePanel({ onClose }) {
            </div>
          )}
 
-         {!isHost && (
-           <div className="grid-2">
-             <div className="form-group">
-               <label className="form-label">Trình độ</label>
-               <select className="form-select" value={form.skill_level} onChange={e => setForm(f => ({...f, skill_level: e.target.value}))}>
-                 <option value="">-- Chọn --</option>
-                 {SKILL_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}
-               </select>
-             </div>
-             <div className="form-group">
-               <label className="form-label">Thành phố</label>
-               <select className="form-select" value={form.city} onChange={e => setForm(f => ({...f, city: e.target.value}))}>
-                 {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-               </select>
-             </div>
-           </div>
-         )}
-
          <button type="submit" className="btn btn-primary" disabled={saving}>
            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
          </button>
@@ -239,52 +215,164 @@ function ProfilePanel({ onClose }) {
  );
 }
 
-/* ── Modal Quản lý Kèo của tôi (Dành cho Host xem lịch sử tạo kèo) ── */
-function MyMatchesModal({ onClose }) {
-  // Dữ liệu mẫu giả lập các kèo Host đã tạo (Sau này bạn kết nối API lấy từ database của host)
-  const [matches] = useState([
-    { id: 1, title: 'Kèo giao lưu tối thứ 4', court: 'Sân Cầu lông Thành Công', time: '19:00 - 21:00, 02/08/2026', status: 'Đang mở' },
-    { id: 2, title: 'Kèo trình độ trung bình', court: 'Sân Bách Khoa', time: '18:00 - 20:00, 28/07/2026', status: 'Đã hoàn thành' },
-  ]);
+/* ── Modal Quản lý Kèo của tôi ── */
+function MyMatchesModal({ onClose, onSelectMatch }) {
+  const { user } = useAuth();
+  const [tab, setTab] = useState('created'); // 'created' | 'registered'
+  const [loading, setLoading] = useState(true);
+  const [allMatches, setAllMatches] = useState([]);
+  const [copiedId, setCopiedId] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        const data = await api.getMatches();
+        const detailed = await Promise.all(
+          data.map(m => api.getMatch(m.id).catch(() => m))
+        );
+        setAllMatches(detailed);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const createdMatches = allMatches.filter(
+    m => (user && m.host_id === user.id) || (user && m.host_name === user.full_name)
+  );
+
+  const registeredMatches = allMatches.filter(
+    m => Array.isArray(m.participants) && m.participants.some(
+      p => (user && p.user_id === user.id) || (user && p.player_phone && p.player_phone === user.phone) || (user && p.player_name === user.full_name)
+    )
+  );
+
+  function handleCopyZalo(m, e) {
+    e.stopPropagation();
+    const text = formatZaloMatchPost(m);
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(m.id);
+      setTimeout(() => setCopiedId(null), 2500);
+    });
+  }
+
+  const matchesToShow = tab === 'created' ? createdMatches : registeredMatches;
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-box" style={{ maxWidth: 520, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div className="modal-box" style={{ maxWidth: 560, maxHeight: '85vh', overflowY: 'auto' }}>
         <div className="modal-header">
-          <h2 style={{ fontWeight: 700, fontSize: '1rem' }}>Kèo của tôi đã tạo</h2>
+          <div>
+            <h2 style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0F172A' }}>Kèo của tôi</h2>
+            <div style={{ fontSize: '0.78rem', color: '#64748B' }}>Quản lý kèo đấu bạn làm host hoặc đã đăng ký tham gia</div>
+          </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
         </div>
-        <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-            Danh sách các trận đấu bạn đã tổ chức giúp người chơi đối soát mức độ uy tín:
-          </div>
 
-          {matches.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-              Bạn chưa tạo kèo đấu nào.
+        {/* Tab Header */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+          <button
+            onClick={() => setTab('created')}
+            style={{
+              flex: 1, padding: '10px 12px', fontSize: '0.82rem', fontWeight: 700,
+              border: 'none', borderBottom: tab === 'created' ? '2px solid var(--brand)' : '2px solid transparent',
+              background: tab === 'created' ? '#FFFFFF' : 'transparent',
+              color: tab === 'created' ? 'var(--brand)' : '#64748B', cursor: 'pointer',
+            }}
+          >
+            🟢 ĐÃ TẠO ({createdMatches.length})
+          </button>
+          <button
+            onClick={() => setTab('registered')}
+            style={{
+              flex: 1, padding: '10px 12px', fontSize: '0.82rem', fontWeight: 700,
+              border: 'none', borderBottom: tab === 'registered' ? '2px solid var(--brand)' : '2px solid transparent',
+              background: tab === 'registered' ? '#FFFFFF' : 'transparent',
+              color: tab === 'registered' ? 'var(--brand)' : '#64748B', cursor: 'pointer',
+            }}
+          >
+            🔵 ĐÃ ĐĂNG KÝ ({registeredMatches.length})
+          </button>
+        </div>
+
+        <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16 }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>Đang tải danh sách kèo...</div>
+          ) : matchesToShow.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748B', background: '#F8FAFC', borderRadius: 8, border: '1px dashed #CBD5E1' }}>
+              {tab === 'created' ? 'Bạn chưa tạo kèo đấu nào.' : 'Bạn chưa đăng ký tham gia kèo đấu nào.'}
             </div>
           ) : (
-            matches.map(m => (
-              <div key={m.id} style={{
-                padding: 12, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-subtle)',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{m.title}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>📍 {m.court}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>⏰ {m.time}</div>
+            matchesToShow.map(m => {
+              const confirmedCount = m.confirmed_count || (m.participants ? m.participants.filter(p => p.status === 'confirmed').length : 0);
+              const isCopied = copiedId === m.id;
+              const myParticipant = Array.isArray(m.participants) ? m.participants.find(p => (user && p.user_id === user.id) || (user && p.player_phone && p.player_phone === user.phone) || (user && p.player_name === user.full_name)) : null;
+
+              return (
+                <div
+                  key={m.id}
+                  onClick={() => { onClose(); if (onSelectMatch) onSelectMatch(m); }}
+                  style={{
+                    padding: 14, borderRadius: 8, border: '1px solid #E2E8F0', background: '#FFFFFF',
+                    display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'border-color 0.2s'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0F172A' }}>{m.title}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <MapPin size={13} style={{ flexShrink: 0, color: 'var(--brand)' }} />
+                        <span>{m.court_name || m.court} ({m.district})</span>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: 2 }}>
+                        📅 {fmtDate(m.play_date)} | ⏰ {fmtTime(m.start_time)} – {fmtTime(m.end_time)}
+                      </div>
+                    </div>
+                    <span style={{
+                      padding: '4px 8px', borderRadius: 12, fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap',
+                      background: m.status === 'open' || m.status === 'Đang mở' ? '#F0FDF4' : '#F1F5F9',
+                      color: m.status === 'open' || m.status === 'Đang mở' ? '#15803D' : '#64748B',
+                      border: `1px solid ${m.status === 'open' || m.status === 'Đang mở' ? '#BBF7D0' : '#E2E8F0'}`
+                    }}>
+                      {m.status === 'open' || m.status === 'Đang mở' ? 'Đang mở' : 'Đã đóng'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTop: '1px solid #F1F5F9' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
+                      👥 Slots: <span style={{ color: 'var(--brand)', fontWeight: 800 }}>{confirmedCount}</span>/{m.max_slots} suất
+                      {myParticipant && (
+                        <span style={{ marginLeft: 8, padding: '2px 6px', borderRadius: 4, background: myParticipant.status === 'confirmed' ? '#DCFCE7' : '#FEF3C7', color: myParticipant.status === 'confirmed' ? '#166534' : '#92400E', fontSize: '0.7rem' }}>
+                          {myParticipant.status === 'confirmed' ? '✓ Đã xác nhận' : '⏳ Dự bị'}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {tab === 'created' && (
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          onClick={(e) => handleCopyZalo(m, e)}
+                          style={{
+                            background: isCopied ? '#059669' : '#0284C7', color: '#FFFFFF',
+                            fontSize: '0.75rem', fontWeight: 700, padding: '5px 10px', borderRadius: 6, border: 'none'
+                          }}
+                        >
+                          {isCopied ? '✓ Đã copy Zalo!' : '📋 Copy bài Zalo'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span style={{
-                    padding: '4px 8px', borderRadius: 12, fontSize: '0.72rem', fontWeight: 600,
-                    background: m.status === 'Đang mở' ? 'rgba(5,150,105,0.1)' : 'rgba(100,116,139,0.1)',
-                    color: m.status === 'Đang mở' ? '#059669' : '#64748b'
-                  }}>
-                    {m.status}
-                  </span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

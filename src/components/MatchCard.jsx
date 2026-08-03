@@ -1,5 +1,6 @@
 // src/components/MatchCard.jsx - CareerViet-style listing card
 import { fmtCurrency, fmtDate, fmtTime, slotPercent } from '../utils/helpers';
+import { MapPin } from 'lucide-react';
 
 const GENDER_LABEL = {
   male:   'Chỉ Nam',
@@ -38,16 +39,27 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
       {/* ── MIDDLE: Details ── */}
       <div className="mc-body">
         {/* Court Name as Main Header */}
-        <h3 className="mc-title" style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 6px 0' }}>
-          📍 {match.court_name} <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '0.85rem' }}>– {match.district}</span>
+        <h3 className="mc-title" style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <MapPin size={18} style={{ color: 'var(--brand)', flexShrink: 0 }} />
+          <span>
+            {match.court_name} {match.court_number && <span style={{ color: 'var(--brand)', fontWeight: 700 }}>({match.court_number})</span>}
+            <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '0.85rem' }}> – {match.district}</span>
+          </span>
         </h3>
 
-        {/* Host */}
-        <div className="mc-row" style={{ marginBottom: 6 }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', flexShrink: 0 }}>
-            <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
-          </svg>
-          <span className="mc-host" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Host: {match.host_name}</span>
+        {/* Host Info & Contact */}
+        <div className="mc-row" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', flexShrink: 0 }}>
+              <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
+            </svg>
+            <span className="mc-host" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Host: {match.host_name}</span>
+          </div>
+          {match.host_phone && (
+            <span style={{ fontSize: '0.8rem', color: 'var(--brand)', fontWeight: 600, background: 'var(--brand-light)', padding: '2px 8px', borderRadius: 4 }}>
+              📞 {match.host_phone}
+            </span>
+          )}
         </div>
 
         {/* Cost / Category breakdown */}
@@ -150,7 +162,8 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
             width: '100%', boxSizing: 'border-box', whiteSpace: 'nowrap'
           }}
         >
-          <span>📍 Xem bản đồ sân</span>
+          <MapPin size={15} />
+          <span>Xem bản đồ sân</span>
         </a>
       </div>
 

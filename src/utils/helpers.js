@@ -135,3 +135,33 @@ export const HCM_DISTRICTS = [
   'Gò Vấp', 'Phú Nhuận', 'Tân Bình', 'Thủ Đức',
 ];
 export const DN_DISTRICTS = ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu'];
+
+/** Format match details as Zalo post text */
+export function formatZaloMatchPost(match) {
+  if (!match) return '';
+  const participants = (match.participants || []).filter(p => p.status === 'confirmed');
+  const playerList = participants.map((p, i) => `   ${i + 1}. ${p.player_name}`).join('\n');
+  const categoriesText = match.slot_categories && match.slot_categories.length > 0
+    ? match.slot_categories.map(c => `   - ${c.gender === 'female' ? '♀ Nữ' : '♂ Nam'} (${c.skill_level}): ${c.slots} suất – ${fmtCurrency(c.cost)}`).join('\n')
+    : `   - Chi phí: ${fmtCurrency(match.cost_per_slot)} / người`;
+
+  return [
+    `🎾 KÈO CẦU LÔNG: ${match.court_name ? match.court_name.toUpperCase() : ''}`,
+    ``,
+    `📍 Sân: ${match.court_name || ''} ${match.court_number ? `(${match.court_number})` : ''} (${match.district || ''})`,
+    `📞 Host: ${match.host_name || ''} ${match.host_phone ? `- SĐT: ${match.host_phone}` : ''}`,
+    `📅 Ngày: ${fmtDate(match.play_date)}`,
+    `⏰ Thời gian: ${fmtTime(match.start_time)} – ${fmtTime(match.end_time)}`,
+    `👥 Slot: ${participants.length}/${match.max_slots} suất`,
+    `💰 Phân bổ suất & Chi phí:`,
+    categoriesText,
+    `🏸 Loại cầu: ${match.shuttlecock || 'Ba Sao'}`,
+    ``,
+    `Danh sách tham gia:`,
+    playerList || '   (Chưa có ai đăng ký)',
+    ``,
+    match.note ? `Ghi chú: ${match.note}` : '',
+    match.bank_account ? `🏦 Chuyển khoản cọc: ${match.bank_name || ''} - ${match.bank_account} (${match.bank_owner || ''})` : '',
+  ].filter(Boolean).join('\n');
+}
+

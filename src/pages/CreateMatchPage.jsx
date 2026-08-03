@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES, HN_DISTRICTS, HCM_DISTRICTS, DN_DISTRICTS, SHUTTLECOCKS, BANKS, fmtTime } from '../utils/helpers';
 import LogoIcon from '../components/LogoIcon';
 import AIForensicReport from '../components/AIForensicReport';
+import { MapPin } from 'lucide-react';
 
 const districtMap = { 'Hà Nội': HN_DISTRICTS, 'TP.HCM': HCM_DISTRICTS, 'Đà Nẵng': DN_DISTRICTS };
 
@@ -13,7 +14,7 @@ const defaultForm = {
   title: '', host_name: '', host_phone: '', court_name: '', court_id: '',
   city: 'Hà Nội', district: '', play_date: '', start_time: '', end_time: '',
   max_slots: 10, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
-  skill_levels: ['Tất cả trình độ'], note: '',
+  skill_levels: ['Tất cả trình độ'], note: '', booking_proof: '',
   bank_name: '', bank_account: '', bank_owner: '',
 };
 
@@ -182,14 +183,21 @@ export default function CreateMatchPage() {
                           onMouseDown={e => e.preventDefault()}
                           style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '0.85rem', borderBottom: '1px solid var(--border-color)' }}>
                           <div style={{ fontWeight: 600 }}>{c.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            📍 {c.address || [c.district, c.city].filter(Boolean).join(', ')}
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                            <MapPin size={13} style={{ flexShrink: 0 }} />
+                            <span>{c.address || [c.district, c.city].filter(Boolean).join(', ')}</span>
                           </div>
                         </div>
                       ))}
                     </div>
                   );
                 })()}
+              </div>
+
+              <div className="form-group" style={{ marginTop: 12 }}>
+                <label className="form-label">SỐ SÂN CỤ THỂ (VD: Sân 3, Sân 5 & 6...)</label>
+                <input className="form-input" placeholder="VD: Sân 3 hoặc Sân A2"
+                  value={form.court_number || ''} onChange={e => set('court_number', e.target.value)} />
               </div>
 
               <div className="auth-grid-2">

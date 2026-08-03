@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES, HN_DISTRICTS, HCM_DISTRICTS, DN_DISTRICTS, SHUTTLECOCKS, BANKS } from '../utils/helpers';
+import { MapPin } from 'lucide-react';
 
 const districtMap = { 'Hà Nội': HN_DISTRICTS, 'TP.HCM': HCM_DISTRICTS, 'Đà Nẵng': DN_DISTRICTS };
 
@@ -10,7 +11,7 @@ const defaultForm = {
   title: '', host_name: '', host_phone: '', court_name: '', court_id: '',
   city: 'Hà Nội', district: '', play_date: '', start_time: '', end_time: '',
   max_slots: 10, cost_per_slot: 60000, shuttlecock: 'Ba Sao',
-  skill_levels: ['Tất cả trình độ'], note: '',
+  skill_levels: ['Tất cả trình độ'], note: '', booking_proof: '',
   bank_name: '', bank_account: '', bank_owner: '',
 };
 
@@ -18,9 +19,9 @@ export default function CreateMatchModal({ onClose, onCreated }) {
   const { user } = useAuth();
   const [form, setForm] = useState({
     ...defaultForm,
-    play_date:  new Date().toISOString().split('T')[0],
-    host_name:  user?.full_name || '',
-    host_phone: user?.phone     || '',
+    play_date: new Date().toISOString().split('T')[0],
+    host_name: user?.full_name || '',
+    host_phone: user?.phone || '',
   });
   const [courts, setCourts] = useState([]);
   const [step, setStep] = useState(1); // 1=basic, 2=details, 3=payment
@@ -28,7 +29,7 @@ export default function CreateMatchModal({ onClose, onCreated }) {
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
-    api.getCourts().then(setCourts).catch(() => {});
+    api.getCourts().then(setCourts).catch(() => { });
   }, []);
 
   function set(k, v) {
@@ -80,7 +81,7 @@ export default function CreateMatchModal({ onClose, onCreated }) {
             <p style={{ fontSize: '0.82rem', color: '#5B7A99', marginTop: 4 }}>Chỉ mất 2 phút để tạo kèo và chia sẻ với anh em!</p>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
 
@@ -307,18 +308,70 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                   </div>
                 </div>
 
+                {/* Minh chứng đặt sân */}
+                <div className="form-group" style={{ margin: '12px 0' }}>
+                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>🧾 MINH CHỨNG ĐẶT SÂN </span>
+                    <span style={{ fontSize: '0.75rem', color: '#5B7A99' }}>Tùy chọn</span>
+                  </label>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input
+                      id="create-booking-proof"
+                      className="form-input"
+                      value={form.booking_proof || ''}
+                      onChange={e => set('booking_proof', e.target.value)}
+                      placeholder="Dán link ảnh hoặc tải lên hình ảnh biên nhận đặt sân"
+                    />
+                    <label style={{
+                      background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap',
+                      display: 'inline-flex', alignItems: 'center', gap: 4, color: '#E2E8F0'
+                    }}>
+                      📁 Tải ảnh
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={e => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => set('booking_proof', ev.target.result);
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  {form.booking_proof && (
+                    <div style={{ marginTop: 8, position: 'relative', display: 'inline-block' }}>
+                      <img src={form.booking_proof} alt="Minh chứng đặt sân" style={{ maxHeight: 100, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)' }} />
+                      <button
+                        type="button"
+                        onClick={() => set('booking_proof', '')}
+                        style={{
+                          position: 'absolute', top: -6, right: -6, background: '#EF4444', color: '#fff',
+                          border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '0.7rem'
+                        }}
+                      >✕</button>
+                    </div>
+                  )}
+                </div>
+
                 <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: '14px 16px' }}>
                   <p style={{ fontSize: '0.8rem', color: '#5B7A99', marginBottom: 8 }}>📋 Xem trước thông tin kèo</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.82rem' }}>
                     {[
                       ['🏸', 'Tiêu đề', form.title],
-                      ['📍', 'Sân', form.court_name || 'Chưa chọn sân'],
+                      [<MapPin key="mappin" size={14} style={{ color: '#5B7A99' }} />, 'Sân', form.court_name || 'Chưa chọn sân'],
+                      ['🏟️', 'Số sân', form.court_number],
                       ['📌', 'Địa điểm', `${form.district || ''} ${form.city}`],
                       ['📅', 'Ngày', form.play_date],
                       ['⏰', 'Giờ', `${form.start_time} – ${form.end_time}`],
                       ['👥', 'Số người', form.max_slots + ' suất'],
                       ['💰', 'Chi phí', form.cost_per_slot ? (parseInt(form.cost_per_slot)).toLocaleString('vi-VN') + 'đ' : 'Miễn phí'],
                       ['🎯', 'Trình độ', form.skill_levels.join(', ')],
+                      ['🧾', 'Minh chứng', form.booking_proof ? 'Đã đính kèm ảnh đặt sân' : null],
                     ].map(([icon, label, value]) => value ? (
                       <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <span>{icon}</span>
