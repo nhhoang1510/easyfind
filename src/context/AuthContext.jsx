@@ -37,14 +37,25 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  const updateProfile = useCallback(async (data) => {
-    const updated = await api.updateProfile(data);
-    setUser(updated);
-    return updated;
+  const socialLogin = useCallback(async (providerName) => {
+    const mockSocialUser = {
+      id: Date.now(),
+      full_name: providerName === 'Google' ? 'Nguyễn Văn Google' : 'Nguyễn Văn Zalo',
+      username: (providerName.toLowerCase()) + '_user_' + Math.floor(Math.random() * 1000),
+      phone: '0912345678',
+      gender: 'male',
+      role: 'player',
+      skill_level: 'Trung bình',
+      city: 'Hà Nội'
+    };
+    const token = 'social_token_' + Date.now();
+    localStorage.setItem('kcp_token', token);
+    setUser(mockSocialUser);
+    return mockSocialUser;
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, socialLogin }}>
       {children}
     </AuthContext.Provider>
   );

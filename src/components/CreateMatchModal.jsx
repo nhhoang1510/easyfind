@@ -228,28 +228,34 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
                     {(form.slot_categories || []).map((cat, idx) => (
                       <div key={cat.id || idx} style={{
-                        background: 'rgba(255,255,255,0.04)', padding: '12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)',
-                        position: 'relative', display: 'flex', flexDirection: 'column', gap: 8
+                        background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)',
+                        display: 'flex', flexDirection: 'column', gap: 10
                       }}>
-                        {/* Nút xóa nhóm */}
-                        <button type="button" onClick={() => {
-                          const next = form.slot_categories.filter((_, i) => i !== idx);
-                          set('slot_categories', next);
-                          const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
-                          set('max_slots', total || 1);
-                        }}
-                          title="Xóa nhóm suất"
-                          style={{
-                            position: 'absolute', right: 10, top: 10, background: '#FEF2F2', border: '1px solid #FCA5A5',
-                            color: '#EF4444', width: 22, height: 22, borderRadius: '50%', display: 'flex',
-                            alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
-                            padding: 0, lineHeight: 1
-                          }}
-                        >✕</button>
+                        {/* Header nhóm & Nút xóa */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                          <span style={{ fontSize: '0.75rem', color: '#00F5C4', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Nhóm Suất #{idx + 1}
+                          </span>
+                          {form.slot_categories.length > 1 && (
+                            <button type="button" onClick={() => {
+                              const next = form.slot_categories.filter((_, i) => i !== idx);
+                              set('slot_categories', next);
+                              const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
+                              set('max_slots', total || 1);
+                            }}
+                              title="Xóa nhóm suất"
+                              style={{
+                                background: '#FEF2F2', border: '1px solid #FCA5A5',
+                                color: '#EF4444', padding: '3px 8px', borderRadius: 6, display: 'flex',
+                                alignItems: 'center', gap: 4, fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
+                              }}
+                            >✕ Xóa nhóm</button>
+                          )}
+                        </div>
 
                         {/* Hàng 1: Đối tượng */}
                         <div>
-                          <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 2, textTransform: 'uppercase' }}>ĐỐI TƯỢNG</span>
+                          <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>ĐỐI TƯỢNG</span>
                           <select className="form-select" style={{ padding: '6px 8px', fontSize: '0.82rem', fontWeight: 600 }}
                             value={cat.gender}
                             onChange={e => {
@@ -561,20 +567,25 @@ export function MultiSelectSkillDropdown({ value, onChange }) {
           alignItems: 'center',
           justify: 'space-between',
           padding: '8px 12px',
-          fontSize: '0.82rem',
+          fontSize: '0.83rem',
           fontWeight: 600,
-          background: 'rgba(255,255,255,0.06)',
-          color: selectedList.length > 0 ? '#00F5C4' : '#9DB4CC',
-          border: '1px solid rgba(255,255,255,0.15)',
+          background: 'var(--bg-surface, #FFFFFF)',
+          color: selectedList.length > 0 ? 'var(--text-main, #0F172A)' : 'var(--text-muted, #64748B)',
+          border: '1px solid var(--border-color, #CBD5E1)',
           borderRadius: 8,
           cursor: 'pointer',
           textAlign: 'left'
         }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {selectedList.length > 0 ? `✓ ${displayText}` : displayText}
+          {selectedList.length > 0 ? (
+            <>
+              <span style={{ color: '#059669', fontWeight: 700, marginRight: 4 }}>✓</span>
+              <span>{displayText}</span>
+            </>
+          ) : displayText}
         </span>
-        <span style={{ fontSize: '0.65rem', marginLeft: 6, color: '#9DB4CC', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
+        <span style={{ fontSize: '0.65rem', marginLeft: 6, color: 'var(--text-muted, #64748B)', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
@@ -585,10 +596,10 @@ export function MultiSelectSkillDropdown({ value, onChange }) {
             left: 0,
             right: 0,
             zIndex: 999,
-            background: '#0F172A',
-            border: '1px solid rgba(255,255,255,0.15)',
+            background: 'var(--bg-surface, #FFFFFF)',
+            border: '1px solid var(--border-color, #CBD5E1)',
             borderRadius: 8,
-            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.15)',
             padding: '6px',
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -609,8 +620,8 @@ export function MultiSelectSkillDropdown({ value, onChange }) {
                   borderRadius: 6,
                   fontSize: '0.78rem',
                   fontWeight: isSelected ? 700 : 500,
-                  background: isSelected ? 'rgba(0,245,196,0.15)' : 'transparent',
-                  color: isSelected ? '#00F5C4' : '#9DB4CC',
+                  background: isSelected ? '#ECFDF5' : 'transparent',
+                  color: isSelected ? '#047857' : 'var(--text-main, #334155)',
                   cursor: 'pointer',
                   userSelect: 'none'
                 }}
@@ -619,7 +630,7 @@ export function MultiSelectSkillDropdown({ value, onChange }) {
                   type="checkbox"
                   checked={isSelected}
                   readOnly
-                  style={{ accentColor: '#00F5C4', width: 14, height: 14, cursor: 'pointer' }}
+                  style={{ accentColor: '#059669', width: 14, height: 14, cursor: 'pointer' }}
                 />
                 <span>{s}</span>
               </label>

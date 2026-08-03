@@ -295,28 +295,34 @@ export default function CreateMatchPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
                     {(form.slot_categories || []).map((cat, idx) => (
                           <div key={cat.id || idx} style={{
-                            background: 'var(--bg-surface)', padding: '12px', borderRadius: 8, border: '1px solid var(--border-color)',
-                            position: 'relative', display: 'flex', flexDirection: 'column', gap: 8
+                            background: 'var(--bg-surface)', padding: '14px', borderRadius: 8, border: '1px solid var(--border-color)',
+                            display: 'flex', flexDirection: 'column', gap: 10
                           }}>
-                            {/* Nút xóa nhóm */}
-                            <button type="button" onClick={() => {
-                              const next = form.slot_categories.filter((_, i) => i !== idx);
-                              set('slot_categories', next);
-                              const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
-                              set('max_slots', total || 1);
-                            }}
-                              title="Xóa nhóm suất"
-                              style={{
-                                position: 'absolute', right: 10, top: 10, background: '#FEF2F2', border: '1px solid #FCA5A5',
-                                color: '#EF4444', width: 22, height: 22, borderRadius: '50%', display: 'flex',
-                                alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
-                                padding: 0, lineHeight: 1
-                              }}
-                            >✕</button>
+                            {/* Header nhóm & Nút xóa */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--brand)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Nhóm Suất #{idx + 1}
+                              </span>
+                              {form.slot_categories.length > 1 && (
+                                <button type="button" onClick={() => {
+                                  const next = form.slot_categories.filter((_, i) => i !== idx);
+                                  set('slot_categories', next);
+                                  const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
+                                  set('max_slots', total || 1);
+                                }}
+                                  title="Xóa nhóm suất"
+                                  style={{
+                                    background: '#FEF2F2', border: '1px solid #FCA5A5',
+                                    color: '#EF4444', padding: '3px 8px', borderRadius: 6, display: 'flex',
+                                    alignItems: 'center', gap: 4, fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
+                                  }}
+                                >✕ Xóa nhóm</button>
+                              )}
+                            </div>
 
                             {/* Hàng 1: Đối tượng */}
                             <div>
-                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 2 }}>ĐỐI TƯỢNG</span>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>ĐỐI TƯỢNG</span>
                               <select className="form-input" style={{ padding: '6px 8px', fontSize: '0.8rem', fontWeight: 600 }}
                                 value={cat.gender}
                                 onChange={e => {
