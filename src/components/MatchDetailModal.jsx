@@ -154,12 +154,9 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
         {/* Modal Header */}
         <div className="modal-header">
           <div style={{ minWidth: 0, paddingRight: 16 }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E11D48', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <MapPin size={14} style={{ flexShrink: 0 }} />
-              <span>{match.court_name} – {match.district}</span>
-            </div>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
-              Chi tiết danh sách & Đăng ký
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.3, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MapPin size={18} style={{ color: 'var(--brand)', flexShrink: 0 }} />
+              <span>{match.court_name} {match.court_number && <span style={{ color: 'var(--brand)', fontWeight: 800 }}>({match.court_number})</span>} <span style={{ fontWeight: 400, color: '#64748B', fontSize: '0.85rem' }}>– {match.district}</span></span>
             </h2>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose} style={{ fontSize: '1.2rem', padding: '4px 10px' }}>
