@@ -37,6 +37,12 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const updateProfile = useCallback(async (data) => {
+    const updated = await api.updateProfile(data);
+    setUser(updated);
+    return updated;
+  }, []);
+
   const socialLogin = useCallback(async (providerName) => {
     const mockSocialUser = {
       id: Date.now(),
