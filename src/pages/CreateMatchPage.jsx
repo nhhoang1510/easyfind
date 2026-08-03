@@ -381,8 +381,9 @@ export default function CreateMatchPage() {
                                 <input type="number" className="form-input" min={1} max={30} style={{ padding: '6px 8px', fontSize: '0.85rem', fontWeight: 700 }}
                                   value={cat.slots}
                                   onChange={e => {
+                                    const raw = e.target.value;
                                     const next = [...form.slot_categories];
-                                    next[idx].slots = Math.max(1, parseInt(e.target.value) || 1);
+                                    next[idx].slots = raw === '' ? '' : Math.max(0, parseInt(raw) || 0);
                                     set('slot_categories', next);
                                     const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
                                     set('max_slots', total);
@@ -395,8 +396,9 @@ export default function CreateMatchPage() {
                                 <input type="number" className="form-input" step={5000} min={0} style={{ padding: '6px 8px', fontSize: '0.85rem', fontWeight: 700 }}
                                   value={cat.cost}
                                   onChange={e => {
+                                    const raw = e.target.value;
                                     const next = [...form.slot_categories];
-                                    next[idx].cost = parseFloat(e.target.value) || 0;
+                                    next[idx].cost = raw === '' ? '' : Math.max(0, parseFloat(raw) || 0);
                                     set('slot_categories', next);
                                   }}
                                 />
