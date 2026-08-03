@@ -225,42 +225,6 @@ export default function CreateMatchPage() {
 
                 {/* ── Khung giờ ── */}
                 <div className="form-group">
-                  <label className="form-label">KHUNG GIỜ CHƠI *</label>
-
-                  {/* Nút chọn nhanh khung giờ phổ biến */}
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-                    {[
-                      { label: '06:00 - 08:00', start: '06:00', end: '08:00' },
-                      { label: '08:00 - 10:00', start: '08:00', end: '10:00' },
-                      { label: '17:00 - 19:00', start: '17:00', end: '19:00' },
-                      { label: '18:00 - 20:00', start: '18:00', end: '20:00' },
-                      { label: '19:00 - 21:00', start: '19:00', end: '21:00' },
-                      { label: '19:30 - 21:30', start: '19:30', end: '21:30' },
-                      { label: '20:00 - 22:00', start: '20:00', end: '22:00' },
-                    ].map(preset => {
-                      const isActive = form.start_time === preset.start && form.end_time === preset.end;
-                      return (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          onClick={() => {
-                            set('start_time', preset.start);
-                            set('end_time', preset.end);
-                          }}
-                          style={{
-                            padding: '6px 10px', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600,
-                            border: isActive ? '1px solid var(--brand)' : '1px solid var(--border-color)',
-                            background: isActive ? 'var(--brand-light)' : 'var(--bg-surface)',
-                            color: isActive ? 'var(--brand)' : 'var(--text-main)',
-                            cursor: 'pointer', transition: 'all 0.15s'
-                          }}
-                        >
-                          {preset.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
                   {/* Bộ chọn giờ dạng Dropdown responsive */}
                   <div className="auth-grid-2">
                     <div>
@@ -346,10 +310,12 @@ export default function CreateMatchPage() {
                               const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
                               set('max_slots', total || 1);
                             }}
+                              title="Xóa nhóm suất"
                               style={{
-                                position: 'absolute', right: 8, top: 8, background: '#FEF2F2', border: '1px solid #FECACA',
-                                color: '#EF4444', width: 26, height: 26, borderRadius: '50%', display: 'flex',
-                                alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', cursor: 'pointer'
+                                position: 'absolute', right: 10, top: 10, background: '#FEF2F2', border: '1px solid #FCA5A5',
+                                color: '#EF4444', width: 22, height: 22, borderRadius: '50%', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
+                                padding: 0, lineHeight: 1
                               }}
                             >✕</button>
 
@@ -364,15 +330,15 @@ export default function CreateMatchPage() {
                                   set('slot_categories', next);
                                 }}
                               >
-                                <option value="male">♂ Nam</option>
-                                <option value="female">♀ Nữ</option>
-                                <option value="mixed">👫 Nam & Nữ</option>
+                                <option value="male">Nam</option>
+                                <option value="female">Nữ</option>
+                                <option value="mixed">Nam & Nữ</option>
                               </select>
                             </div>
 
-                            {/* Trình độ (cho phép chọn nhiều) */}
+                            {/* Trình độ */}
                             <div>
-                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>TRÌNH ĐỘ (CHỌN NHIỀU)</span>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>TRÌNH ĐỘ</span>
                               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                                 {['Mới chơi', 'Yếu', 'TB yếu', 'Trung bình', 'TB khá', 'Khá'].map(s => {
                                   const levels = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);

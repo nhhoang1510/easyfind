@@ -230,10 +230,12 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                           const total = next.reduce((sum, c) => sum + (parseInt(c.slots) || 0), 0);
                           set('max_slots', total || 1);
                         }}
+                          title="Xóa nhóm suất"
                           style={{
-                            position: 'absolute', right: 8, top: 8, background: '#FEF2F2', border: '1px solid #FECACA',
-                            color: '#EF4444', width: 24, height: 24, borderRadius: '50%', display: 'flex',
-                            alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', cursor: 'pointer'
+                            position: 'absolute', right: 10, top: 10, background: '#FEF2F2', border: '1px solid #FCA5A5',
+                            color: '#EF4444', width: 22, height: 22, borderRadius: '50%', display: 'flex',
+                            alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
+                            padding: 0, lineHeight: 1
                           }}
                         >✕</button>
 
@@ -248,15 +250,15 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                               set('slot_categories', next);
                             }}
                           >
-                            <option value="male">♂ Nam</option>
-                            <option value="female">♀ Nữ</option>
-                            <option value="mixed">👫 Nam & Nữ</option>
+                            <option value="male">Nam</option>
+                            <option value="female">Nữ</option>
+                            <option value="mixed">Nam & Nữ</option>
                           </select>
                         </div>
 
-                        {/* Trình độ (cho phép chọn nhiều) */}
+                        {/* Trình độ */}
                         <div>
-                          <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>TRÌNH ĐỘ (CHỌN NHIỀU)</span>
+                          <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>TRÌNH ĐỘ</span>
                           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                             {['Mới chơi', 'Yếu', 'TB yếu', 'Trung bình', 'TB khá', 'Khá'].map(s => {
                               const levels = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);
