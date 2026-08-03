@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { avatarColor, avatarInitials, SKILL_LEVELS, CITIES, formatZaloMatchPost, fmtDate, fmtTime } from '../utils/helpers';
 import { api } from '../api/client';
-import { MapPin } from 'lucide-react';
+import { MapPin, Calendar, Clock, Users, Copy, Check, UserCheck, PlusCircle } from 'lucide-react';
 
 const GENDER_LABELS = { male: 'Nam', female: 'Nữ', other: 'Khác' };
 const ROLE_LABELS = { host: 'Host', player: 'Player' };
@@ -282,9 +282,11 @@ function MyMatchesModal({ onClose, onSelectMatch }) {
               border: 'none', borderBottom: tab === 'created' ? '2px solid var(--brand)' : '2px solid transparent',
               background: tab === 'created' ? '#FFFFFF' : 'transparent',
               color: tab === 'created' ? 'var(--brand)' : '#64748B', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
             }}
           >
-            🟢 ĐÃ TẠO ({createdMatches.length})
+            <PlusCircle size={15} style={{ color: tab === 'created' ? 'var(--brand)' : '#64748B' }} />
+            <span>ĐÃ TẠO ({createdMatches.length})</span>
           </button>
           <button
             onClick={() => setTab('registered')}
@@ -293,9 +295,11 @@ function MyMatchesModal({ onClose, onSelectMatch }) {
               border: 'none', borderBottom: tab === 'registered' ? '2px solid var(--brand)' : '2px solid transparent',
               background: tab === 'registered' ? '#FFFFFF' : 'transparent',
               color: tab === 'registered' ? 'var(--brand)' : '#64748B', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
             }}
           >
-            🔵 ĐÃ ĐĂNG KÝ ({registeredMatches.length})
+            <UserCheck size={15} style={{ color: tab === 'registered' ? 'var(--brand)' : '#64748B' }} />
+            <span>ĐÃ ĐĂNG KÝ ({registeredMatches.length})</span>
           </button>
         </div>
 
@@ -329,8 +333,15 @@ function MyMatchesModal({ onClose, onSelectMatch }) {
                         <MapPin size={13} style={{ flexShrink: 0, color: 'var(--brand)' }} />
                         <span>{m.court_name || m.court} ({m.district})</span>
                       </div>
-                      <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: 2 }}>
-                        📅 {fmtDate(m.play_date)} | ⏰ {fmtTime(m.start_time)} – {fmtTime(m.end_time)}
+                      <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: 4, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Calendar size={13} style={{ flexShrink: 0, color: 'var(--brand)' }} />
+                          <span>{fmtDate(m.play_date)}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Clock size={13} style={{ flexShrink: 0, color: 'var(--brand)' }} />
+                          <span>{fmtTime(m.start_time)} – {fmtTime(m.end_time)}</span>
+                        </div>
                       </div>
                     </div>
                     <span style={{
@@ -344,10 +355,11 @@ function MyMatchesModal({ onClose, onSelectMatch }) {
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTop: '1px solid #F1F5F9' }}>
-                    <div style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
-                      👥 Slots: <span style={{ color: 'var(--brand)', fontWeight: 800 }}>{confirmedCount}</span>/{m.max_slots} suất
+                    <div style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Users size={13} style={{ flexShrink: 0, color: 'var(--brand)' }} />
+                      <span>Slots: <strong style={{ color: 'var(--brand)', fontWeight: 800 }}>{confirmedCount}</strong>/{m.max_slots} suất</span>
                       {myParticipant && (
-                        <span style={{ marginLeft: 8, padding: '2px 6px', borderRadius: 4, background: myParticipant.status === 'confirmed' ? '#DCFCE7' : '#FEF3C7', color: myParticipant.status === 'confirmed' ? '#166534' : '#92400E', fontSize: '0.7rem' }}>
+                        <span style={{ marginLeft: 6, padding: '2px 8px', borderRadius: 4, background: myParticipant.status === 'confirmed' ? '#DCFCE7' : '#FEF3C7', color: myParticipant.status === 'confirmed' ? '#166534' : '#92400E', fontSize: '0.7rem', fontWeight: 700 }}>
                           {myParticipant.status === 'confirmed' ? '✓ Đã xác nhận' : '⏳ Dự bị'}
                         </span>
                       )}
@@ -362,10 +374,21 @@ function MyMatchesModal({ onClose, onSelectMatch }) {
                           onClick={(e) => handleCopyZalo(m, e)}
                           style={{
                             background: isCopied ? '#059669' : '#0284C7', color: '#FFFFFF',
-                            fontSize: '0.75rem', fontWeight: 700, padding: '5px 10px', borderRadius: 6, border: 'none'
+                            fontSize: '0.75rem', fontWeight: 700, padding: '5px 12px', borderRadius: 6, border: 'none',
+                            display: 'flex', alignItems: 'center', gap: 5
                           }}
                         >
-                          {isCopied ? '✓ Đã copy Zalo!' : '📋 Copy bài Zalo'}
+                          {isCopied ? (
+                            <>
+                              <Check size={13} />
+                              <span>Đã copy Zalo!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={13} />
+                              <span>Copy bài Zalo</span>
+                            </>
+                          )}
                         </button>
                       )}
                     </div>
