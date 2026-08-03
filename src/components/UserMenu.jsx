@@ -149,15 +149,15 @@ function ProfileModal({ onClose }) {
        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
          {/* Role switcher */}
          <div style={{ background: 'var(--bg-subtle)', padding: 12, borderRadius: 8, border: '1px solid var(--border-color)' }}>
-           <label className="form-label" style={{ marginBottom: 6 }}>Loại tài khoản</label>
-           <div style={{ display: 'flex', gap: 12 }}>
-             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.88rem' }}>
+           <label className="form-label" style={{ marginBottom: 6 }}>Vai trò</label>
+           <div style={{ display: 'flex', gap: 16 }}>
+             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.88rem', fontWeight: 600 }}>
                <input type="radio" name="role" value="player" checked={form.role === 'player'} onChange={e => setForm(f => ({...f, role: e.target.value}))} />
-               <span>🏸 Player (Người chơi tìm kèo)</span>
+               <span>Người chơi</span>
              </label>
-             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.88rem' }}>
+             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.88rem', fontWeight: 600 }}>
                <input type="radio" name="role" value="host" checked={form.role === 'host'} onChange={e => setForm(f => ({...f, role: e.target.value}))} />
-               <span>👑 Host (Người tổ chức & gom kèo)</span>
+               <span>Người tổ chức</span>
              </label>
            </div>
          </div>
@@ -181,29 +181,6 @@ function ProfileModal({ onClose }) {
              </select>
            </div>
          </div>
-
-         {/* If Host: Show verification details */}
-         {isHost && (
-           <div style={{ border: '1px solid #FDE68A', background: '#FEF3C7', padding: 14, borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
-             <div style={{ fontWeight: 700, color: '#D97706', fontSize: '0.85rem' }}>
-               🔑 XÁC MINH DANH TÍNH HOST TỔ CHỨC
-             </div>
-             <div className="grid-2">
-               <div className="form-group">
-                 <label className="form-label">Số CCCD / CMND</label>
-                 <input className="form-input" placeholder="Nhập 12 số CCCD" value={form.cccd} onChange={e => setForm(f => ({...f, cccd: e.target.value}))} />
-               </div>
-               <div className="form-group">
-                 <label className="form-label">Khu vực hoạt động</label>
-                 <input className="form-input" placeholder="VD: Quận Cầu Giấy" value={form.district} onChange={e => setForm(f => ({...f, district: e.target.value}))} />
-               </div>
-             </div>
-             <div className="form-group">
-               <label className="form-label">Link Facebook / Zalo cá nhân</label>
-               <input className="form-input" placeholder="https://facebook.com/..." value={form.social_link} onChange={e => setForm(f => ({...f, social_link: e.target.value}))} />
-             </div>
-           </div>
-         )}
 
          <button type="submit" className="btn btn-primary" disabled={saving}>
            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
