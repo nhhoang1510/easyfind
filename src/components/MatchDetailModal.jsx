@@ -171,7 +171,7 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
         <div style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
           {[
             { id: 'players', label: `DANH SÁCH (${confirmed.length}/${match.max_slots})` },
-            { id: 'info', label: 'THÔNG TIN KÈO & ẢNH SÂN' },
+            { id: 'proof', label: 'ẢNH ĐẶT SÂN' },
             { id: 'join', label: isFull ? 'ĐĂNG KÝ DỰ BỊ' : 'ĐĂNG KÝ THAM GIA' },
           ].map(t => (
             <button
@@ -215,83 +215,28 @@ export default function MatchDetailModal({ match: initMatch, initialTab = 'playe
             <div style={{ padding: '40px 0', textAlign: 'center', color: '#64748B' }}>Đang tải chi tiết kèo...</div>
           ) : (
             <>
-              {/* TAB 1: INFO */}
-              {tab === 'info' && (
+              {/* TAB 2: PROOF */}
+              {tab === 'proof' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {/* Grid details */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, background: '#F8FAFC', padding: 18, border: '1px solid #E2E8F0', borderRadius: 8 }}>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Host tổ chức</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>{match.host_name}</div>
-                      <div style={{ fontSize: '0.88rem', color: 'var(--brand)', fontWeight: 700, marginTop: 2 }}>
-                        📞 SĐT Host: {match.host_phone || 'Chưa cập nhật'}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Tên sân & Số sân</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>
-                        {match.court_name} {match.court_number && <span style={{ color: 'var(--brand)', fontWeight: 800 }}>({match.court_number})</span>}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Ngày & Thời gian</div>
-                      <div style={{ fontSize: '1.02rem', fontWeight: 700, color: '#0F172A', marginTop: 3 }}>
-                        {fmtDate(match.play_date)} ({fmtTime(match.start_time)} – {fmtTime(match.end_time)})
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Chi phí & Phân bổ suất</div>
-                      {match.slot_categories && match.slot_categories.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
-                          {match.slot_categories.map((c, i) => (
-                            <div key={i} style={{ fontSize: '0.85rem', fontWeight: 700, color: c.gender === 'female' ? '#E11D48' : '#2563EB' }}>
-                              {c.gender === 'female' ? '♀' : '♂'} {c.slots} suất {c.gender === 'female' ? 'Nữ' : 'Nam'} ({c.skill_level}) – {fmtCurrency(c.cost)}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#E11D48', marginTop: 3 }}>
-                          {fmtCurrency(match.cost_per_slot)}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Trình độ yêu cầu</div>
-                      <div style={{ fontSize: '1.02rem', fontWeight: 600, color: '#0F172A', marginTop: 3 }}>{match.skill_level}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Loại cầu sử dụng</div>
-                      <div style={{ fontSize: '1.02rem', fontWeight: 600, color: '#0F172A', marginTop: 3 }}>{match.shuttlecock || 'Ba Sao'}</div>
-                    </div>
-                  </div>
-
-                  {/* Note */}
-                  {match.note && (
-                    <div style={{ border: '1px solid #E2E8F0', padding: 14 }}>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: 4 }}>Ghi chú từ Host</div>
-                      <div style={{ fontSize: '0.88rem', color: '#0F172A', lineHeight: 1.5 }}>{match.note}</div>
-                    </div>
-                  )}
-
                   {/* MINH CHỨNG ĐẶT SÂN DO HOST CUNG CẤP */}
-                  <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: 14 }}>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span>🧾 MINH CHỨNG ĐẶT SÂN (HOST CUNG CẤP)</span>
                     </div>
                     {match.booking_proof ? (
-                      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: 12, textAlign: 'center' }}>
+                      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: 14, textAlign: 'center' }}>
                         <img
                           src={match.booking_proof}
                           alt="Minh chứng đặt sân"
-                          style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 6, cursor: 'pointer', objectFit: 'contain' }}
+                          style={{ maxWidth: '100%', maxHeight: 360, borderRadius: 6, cursor: 'pointer', objectFit: 'contain' }}
                           onClick={() => window.open(match.booking_proof, '_blank')}
                         />
-                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: 6 }}>
+                        <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: 8 }}>
                           🔍 Click vào ảnh để mở xem ảnh kích thước đầy đủ
                         </div>
                       </div>
                     ) : (
-                      <div style={{ padding: '14px 16px', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: 8, color: '#64748B', fontSize: '0.84rem' }}>
+                      <div style={{ padding: '24px 16px', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: 8, color: '#64748B', fontSize: '0.88rem', textAlign: 'center' }}>
                         ℹ️ Host chưa tải lên hình ảnh minh chứng đặt sân cho kèo này.
                       </div>
                     )}
