@@ -1,5 +1,5 @@
 // src/components/CreateMatchModal.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { SKILL_LEVELS, CITIES, HN_DISTRICTS, HCM_DISTRICTS, DN_DISTRICTS, SHUTTLECOCKS, BANKS } from '../utils/helpers';
@@ -267,39 +267,14 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                         {/* Trình độ */}
                         <div>
                           <span style={{ fontSize: '0.7rem', color: '#9DB4CC', fontWeight: 600, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>TRÌNH ĐỘ</span>
-                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                            {['Mới chơi', 'Yếu', 'TB yếu', 'Trung bình', 'TB khá', 'Khá'].map(s => {
-                              const levels = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);
-                              const isSelected = levels.includes(s) || cat.skill_level === s;
-                              return (
-                                <button
-                                  key={s}
-                                  type="button"
-                                  onClick={() => {
-                                    let current = (cat.skill_level || '').split(',').map(x => x.trim()).filter(Boolean);
-                                    if (current.includes(s)) {
-                                      current = current.filter(x => x !== s);
-                                    } else {
-                                      current.push(s);
-                                    }
-                                    const newSkillStr = current.length > 0 ? current.join(', ') : 'Trung bình';
-                                    const next = [...form.slot_categories];
-                                    next[idx].skill_level = newSkillStr;
-                                    set('slot_categories', next);
-                                  }}
-                                  style={{
-                                    padding: '3px 8px', borderRadius: 100, fontSize: '0.73rem', fontWeight: 600,
-                                    border: isSelected ? '1px solid #00F5C4' : '1px solid rgba(255,255,255,0.12)',
-                                    background: isSelected ? 'rgba(0,245,196,0.12)' : 'rgba(255,255,255,0.04)',
-                                    color: isSelected ? '#00F5C4' : '#9DB4CC', cursor: 'pointer',
-                                    transition: 'all 0.12s'
-                                  }}
-                                >
-                                  {isSelected ? '✓ ' : ''}{s}
-                                </button>
-                              );
-                            })}
-                          </div>
+                          <MultiSelectSkillDropdown
+                            value={cat.skill_level}
+                            onChange={newStr => {
+                              const next = [...form.slot_categories];
+                              next[idx].skill_level = newStr;
+                              set('slot_categories', next);
+                            }}
+                          />
                         </div>
 
                         {/* Hàng 2: Số lượng & Giá/người */}
@@ -542,6 +517,116 @@ export default function CreateMatchModal({ onClose, onCreated }) {
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+/* ── Component Dropdown Chọn Trình Độ Nhiều Mục Gọn Gàng Cho Mobile ── */
+export function MultiSelectSkillDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const ALL_SKILLS = ['Mới chơi', 'Yếu', 'TB yếu', 'Trung bình', 'TB khá', 'Khá'];
+  const selectedList = (value || '').split(',').map(x => x.trim()).filter(Boolean);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  function toggleSkill(s) {
+    let next = [...selectedList];
+    if (next.includes(s)) {
+      next = next.filter(x => x !== s);
+    } else {
+      next.push(s);
+    }
+    const newStr = next.length > 0 ? next.join(', ') : 'Trung bình';
+    onChange(newStr);
+  }
+
+  const displayText = selectedList.length > 0 ? selectedList.join(', ') : 'Chọn trình độ...';
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justify: 'space-between',
+          padding: '8px 12px',
+          fontSize: '0.82rem',
+          fontWeight: 600,
+          background: 'rgba(255,255,255,0.06)',
+          color: selectedList.length > 0 ? '#00F5C4' : '#9DB4CC',
+          border: '1px solid rgba(255,255,255,0.15)',
+          borderRadius: 8,
+          cursor: 'pointer',
+          textAlign: 'left'
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {selectedList.length > 0 ? `✓ ${displayText}` : displayText}
+        </span>
+        <span style={{ fontSize: '0.65rem', marginLeft: 6, color: '#9DB4CC', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 4px)',
+            left: 0,
+            right: 0,
+            zIndex: 999,
+            background: '#0F172A',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 8,
+            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+            padding: '6px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 4
+          }}
+        >
+          {ALL_SKILLS.map(s => {
+            const isSelected = selectedList.includes(s);
+            return (
+              <label
+                key={s}
+                onClick={(e) => { e.stopPropagation(); toggleSkill(s); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 8px',
+                  borderRadius: 6,
+                  fontSize: '0.78rem',
+                  fontWeight: isSelected ? 700 : 500,
+                  background: isSelected ? 'rgba(0,245,196,0.15)' : 'transparent',
+                  color: isSelected ? '#00F5C4' : '#9DB4CC',
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  readOnly
+                  style={{ accentColor: '#00F5C4', width: 14, height: 14, cursor: 'pointer' }}
+                />
+                <span>{s}</span>
+              </label>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
