@@ -215,12 +215,8 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                   </div>
                 </div>
 
-                {/* ── Cấu hình Phân bổ Nhóm Suất & Chi Phí ── */}
-                <div className="form-group" style={{ background: 'rgba(255,255,255,0.03)', padding: 14, borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#9DB4CC', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    🎯 PHÂN BỔ NHÓM SUẤT & CHI PHÍ
-                  </div>
-
+                {/* ── Phân bổ Nhóm Suất & Chi Phí ── */}
+                <div className="form-group">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
                     {(form.slot_categories || []).map((cat, idx) => (
                       <div key={cat.id || idx} style={{

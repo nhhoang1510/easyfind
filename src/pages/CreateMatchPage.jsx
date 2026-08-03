@@ -332,14 +332,9 @@ export default function CreateMatchPage() {
                 </div>
 
                 {/* ── Suất & Giá Tiền Chi Tiết (Phân bổ Theo Nhóm) ── */}
-                <div className="form-group" style={{ background: 'var(--bg-subtle)', padding: 14, borderRadius: 10, border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: 12 }}>
-                    🎯 CẤU HÌNH PHÂN BỔ NHÓM SUẤT & CHI PHÍ
-                  </div>
-
-                  <div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-                      {(form.slot_categories || []).map((cat, idx) => (
+                <div className="form-group">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
+                    {(form.slot_categories || []).map((cat, idx) => (
                           <div key={cat.id || idx} style={{
                             background: 'var(--bg-surface)', padding: '12px', borderRadius: 8, border: '1px solid var(--border-color)',
                             position: 'relative', display: 'flex', flexDirection: 'column', gap: 8
@@ -478,7 +473,6 @@ export default function CreateMatchPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
                 </div>
                 <div className="form-group">
                   <label className="form-label">LOẠI CẦU</label>
