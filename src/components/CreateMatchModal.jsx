@@ -246,10 +246,11 @@ export default function CreateMatchModal({ onClose, onCreated }) {
                               title="Xóa nhóm suất"
                               style={{
                                 background: '#FEF2F2', border: '1px solid #FCA5A5',
-                                color: '#EF4444', padding: '3px 8px', borderRadius: 6, display: 'flex',
-                                alignItems: 'center', gap: 4, fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
+                                color: '#EF4444', width: 22, height: 22, borderRadius: '50%',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: 0
                               }}
-                            >✕ Xóa nhóm</button>
+                            >✕</button>
                           )}
                         </div>
 

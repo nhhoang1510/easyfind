@@ -313,10 +313,11 @@ export default function CreateMatchPage() {
                                   title="Xóa nhóm suất"
                                   style={{
                                     background: '#FEF2F2', border: '1px solid #FCA5A5',
-                                    color: '#EF4444', padding: '3px 8px', borderRadius: 6, display: 'flex',
-                                    alignItems: 'center', gap: 4, fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
+                                    color: '#EF4444', width: 22, height: 22, borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: 0
                                   }}
-                                >✕ Xóa nhóm</button>
+                                >✕</button>
                               )}
                             </div>
 
@@ -449,6 +450,95 @@ export default function CreateMatchPage() {
                         set('shuttlecock', e.target.value);
                       }}
                     />
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>MINH CHỨNG ĐẶT SÂN (BILL / HÓA ĐƠN SÂN)</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--brand)', fontWeight: 600 }}>Tùy chọn - Giúp tăng uy tín</span>
+                  </label>
+                  
+                  <div style={{
+                    border: '2px dashed var(--border-color)',
+                    borderRadius: 8,
+                    padding: 16,
+                    textAlign: 'center',
+                    background: form.booking_proof ? '#F0FDF4' : 'var(--bg-surface)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="proof-upload-input"
+                      style={{ display: 'none' }}
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = async (evt) => {
+                          const base64 = evt.target.result;
+                          set('booking_proof', base64);
+                          setProofScanning(true);
+                          try {
+                            const res = await api.verifyBill({ image: base64, type: 'court_proof' });
+                            setAiReport(res);
+                            setProofVerified(res.is_authentic);
+                          } catch (err) {
+                            console.error('Lỗi quét minh chứng sân:', err);
+                          } finally {
+                            setProofScanning(false);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+
+                    {form.booking_proof ? (
+                      <div style={{ position: 'relative' }}>
+                        <img
+                          src={form.booking_proof}
+                          alt="Minh chứng đặt sân"
+                          style={{ maxHeight: 180, maxWidth: '100%', borderRadius: 6, objectFit: 'contain', margin: '0 auto' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            set('booking_proof', '');
+                            setAiReport(null);
+                            setProofVerified(false);
+                          }}
+                          style={{
+                            position: 'absolute', top: -10, right: 10,
+                            background: '#EF4444', color: '#fff', border: 'none',
+                            borderRadius: '50%', width: 26, height: 26, cursor: 'pointer', fontWeight: 700
+                          }}
+                        >✕</button>
+                      </div>
+                    ) : (
+                      <label htmlFor="proof-upload-input" style={{ cursor: 'pointer', width: '100%', display: 'block' }}>
+                        <div style={{ fontSize: '1.8rem', marginBottom: 4 }}>🧾</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--brand)' }}>
+                          Bấm để tải ảnh hoá đơn đặt sân / ảnh chuyển khoản cọc sân
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                          Hỗ trợ ảnh PNG, JPG, JPEG (Quét AI chống bill giả)
+                        </div>
+                      </label>
+                    )}
+                  </div>
+
+                  {proofScanning && (
+                    <div style={{ marginTop: 8, fontSize: '0.8rem', color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>🔍</span> <span>Đang dùng AI quét minh chứng đặt sân...</span>
+                    </div>
+                  )}
+
+                  {aiReport && !proofScanning && (
+                    <div style={{ marginTop: 10 }}>
+                      <AIForensicReport report={aiReport} />
+                    </div>
                   )}
                 </div>
 

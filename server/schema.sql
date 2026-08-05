@@ -69,6 +69,7 @@ CREATE TABLE matches (
   note            TEXT,
   bank_name       VARCHAR(100),
   bank_account    VARCHAR(50),
+  bank_owner      VARCHAR(100),
   court_number    VARCHAR(50),                -- Số sân cụ thể (VD: Sân 3, Sân 5 & 6)
   booking_proof   TEXT,                       -- Ảnh/Link bằng chứng đặt sân của Host
   status          VARCHAR(20) DEFAULT 'open', -- 'open' | 'closed' | 'cancelled'
@@ -78,6 +79,8 @@ CREATE TABLE matches (
 
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS booking_proof TEXT;
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS court_number VARCHAR(50);
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS bank_owner VARCHAR(100);
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS slot_categories JSONB DEFAULT '[]';
 
 
 

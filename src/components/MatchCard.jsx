@@ -38,7 +38,7 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
 
       {/* ── MIDDLE: Details ── */}
       <div className="mc-body">
-        {/* Court Name as Main Header */}
+        {/* 1. ĐỊA ĐIỂM SÂN (Tên sân, số sân, quận) */}
         <h3 className="mc-title" style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
           <MapPin size={18} style={{ color: 'var(--brand)', flexShrink: 0 }} />
           <span>
@@ -47,24 +47,22 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
           </span>
         </h3>
 
-        {/* Host Info & Contact */}
-        <div className="mc-row" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', flexShrink: 0 }}>
-              <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
+        {/* 2. KHUNG GIỜ VÀ LOẠI CẦU */}
+        <div className="mc-row" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
+          <span className="mc-info-item" style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--brand)' }}>
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
-            <span className="mc-host" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Host: {match.host_name}</span>
-          </div>
-          {match.host_phone && (
-            <span style={{ fontSize: '0.8rem', color: 'var(--brand)', fontWeight: 600, background: 'var(--brand-light)', padding: '2px 8px', borderRadius: 4 }}>
-              📞 {match.host_phone}
-            </span>
-          )}
+            {fmtTime(match.start_time)} – {fmtTime(match.end_time)}
+          </span>
+          <span className="mc-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, padding: '2px 8px' }}>
+            🏸 {match.shuttlecock || 'Ba Sao'}
+          </span>
         </div>
 
-        {/* Cost / Category breakdown */}
+        {/* 3. CÁC SUẤT CHƠI (Số lượng, Nam/Nữ, Trình độ, Chi phí) */}
         {match.slot_categories && match.slot_categories.length > 0 ? (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '6px 0 8px 0' }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 8px 0' }}>
             {match.slot_categories.map((cat, i) => (
               <span key={i} style={{
                 fontSize: '0.8rem', fontWeight: 700, padding: '4px 10px', borderRadius: 6,
@@ -78,7 +76,7 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
             ))}
           </div>
         ) : (
-          <div className="mc-row mc-row--cost" style={{ marginBottom: 6 }}>
+          <div className="mc-row mc-row--cost" style={{ marginBottom: 8 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
             </svg>
@@ -86,17 +84,19 @@ export default function MatchCard({ match, onClick, onRegisterClick }) {
           </div>
         )}
 
-        {/* Time & Shuttlecock */}
-        <div className="mc-row" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <span className="mc-info-item">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-light)' }}>
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        {/* 4. THÔNG TIN HOST LIÊN HỆ */}
+        <div className="mc-row" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', flexShrink: 0 }}>
+              <path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/>
             </svg>
-            {fmtTime(match.start_time)} – {fmtTime(match.end_time)}
-          </span>
-          <span className="mc-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, padding: '2px 8px' }}>
-            🏸 {match.shuttlecock || 'Ba Sao'}
-          </span>
+            <span className="mc-host" style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Host: <strong style={{ color: 'var(--text-main)' }}>{match.host_name}</strong></span>
+          </div>
+          {match.host_phone && (
+            <span style={{ fontSize: '0.8rem', color: 'var(--brand)', fontWeight: 600, background: 'var(--brand-light)', padding: '2px 8px', borderRadius: 4 }}>
+              📞 {match.host_phone}
+            </span>
+          )}
         </div>
 
         {/* Tags row (Chỉ hiển thị khi KHÔNG có nhóm suất phân bổ riêng) */}

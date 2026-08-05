@@ -55,6 +55,17 @@ try {
     await pool.query('SELECT 1');
   }
   console.log('✅ Connected to PostgreSQL');
+  try {
+    await pool.query(`
+      ALTER TABLE matches ADD COLUMN IF NOT EXISTS booking_proof TEXT;
+      ALTER TABLE matches ADD COLUMN IF NOT EXISTS court_number VARCHAR(50);
+      ALTER TABLE matches ADD COLUMN IF NOT EXISTS bank_owner VARCHAR(100);
+      ALTER TABLE matches ADD COLUMN IF NOT EXISTS slot_categories JSONB DEFAULT '[]';
+    `);
+    console.log('✅ Database auto-migrations applied (booking_proof, court_number, bank_owner, slot_categories)');
+  } catch (migErr) {
+    console.warn('⚠️ Auto-migration check warning:', migErr.message);
+  }
 } catch (err) {
   console.warn('⚠️ PostgreSQL connection failed:', err.message);
   console.warn('   Falling back to in-memory Mock DB');

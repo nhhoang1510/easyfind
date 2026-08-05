@@ -268,7 +268,8 @@ app.get('/api/matches', async (req, res) => {
     if (has_slot === 'true') rows = rows.filter(r => parseInt(r.confirmed_count) < r.max_slots);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Lỗi API /api/matches:', err);
+    res.status(500).json({ error: 'Không thể tải danh sách kèo đấu do lỗi máy chủ: ' + (err.message || 'Lỗi không xác định') });
   }
 });
 
